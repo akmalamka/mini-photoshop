@@ -108,6 +108,26 @@ Image* Image::loadImage(std::string filename) {
       throw "format not supported";
     }
   }
+  // string line;
+  // ifstream myfile (filename);
+  // if (myfile.is_open())
+  // {
+  //   int a, b;
+  //   myfile >> a >> b;
+  //   cout << a << endl;
+  //   cout << b << endl;
+  //    // while (myfile >> a >> b)
+  //   // {
+  //   //     // process pair (a,b)
+  //   // }
+  //   while ( getline (myfile,line) )
+  //   {
+
+  //     cout << line << '\n';
+  //   }
+
+  //   myfile.close();
+  // }
 }
 
 void Image::set_pixel(int row, int col, pixel px) {
@@ -120,25 +140,25 @@ pixel Image::get_pixel(int row, int col) {
 
 // int main () {
 //   string line;
-//   ifstream myfile ("../../../img/sample.raw");
-//   if (myfile.is_open())
-//   {
-//     int a, b;
-//     myfile >> a >> b;
-//     cout << a << endl;
-//     cout << b << endl;
-//      // while (myfile >> a >> b)
-//     // {
-//     //     // process pair (a,b)
-//     // }
-//     while ( getline (myfile,line) )
-//     {
+  // ifstream myfile ("../../../img/sample.raw");
+  // if (myfile.is_open())
+  // {
+  //   int a, b;
+  //   myfile >> a >> b;
+  //   cout << a << endl;
+  //   cout << b << endl;
+  //    // while (myfile >> a >> b)
+  //   // {
+  //   //     // process pair (a,b)
+  //   // }
+  //   while ( getline (myfile,line) )
+  //   {
 
-//       cout << line << '\n';
-//     }
+  //     cout << line << '\n';
+  //   }
 
-//     myfile.close();
-//   }
+  //   myfile.close();
+  // }
 
 //   else cout << "Unable to open file"; 
 
