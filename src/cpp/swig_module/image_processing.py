@@ -139,4 +139,7 @@ def nextInt32(bytes, size, pointer):
 def hasEnding(fullString, ending):
     return _image_processing.hasEnding(fullString, ending)
 
+def convertSystemToStdString(str):
+    return _image_processing.convertSystemToStdString(str)
+
 

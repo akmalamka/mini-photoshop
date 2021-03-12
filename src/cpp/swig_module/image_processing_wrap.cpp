@@ -4481,6 +4481,32 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_convertSystemToStdString(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  PyObject *swig_obj[1] ;
+  std::string result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_AsCharPtrAndSize(swig_obj[0], &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "convertSystemToStdString" "', argument " "1"" of type '" "char *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  result = convertSystemToStdString(arg1);
+  resultobj = SWIG_NewPointerObj((new std::string(static_cast< const std::string& >(result))), SWIGTYPE_p_std__string, SWIG_POINTER_OWN |  0 );
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
 static PyMethodDef SwigMethods[] = {
 	 { "SWIG_PyInstanceMethod_New", SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { "Image_imageType_set", _wrap_Image_imageType_set, METH_VARARGS, NULL},
@@ -4517,6 +4543,7 @@ static PyMethodDef SwigMethods[] = {
 	 { "nextInt16", _wrap_nextInt16, METH_VARARGS, NULL},
 	 { "nextInt32", _wrap_nextInt32, METH_VARARGS, NULL},
 	 { "hasEnding", _wrap_hasEnding, METH_VARARGS, NULL},
+	 { "convertSystemToStdString", _wrap_convertSystemToStdString, METH_O, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
