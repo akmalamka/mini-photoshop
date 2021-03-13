@@ -2,8 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
-import rawpy
-import imageio
+from tkinter.filedialog import asksaveasfile 
 
 class App(Frame):
 
@@ -19,7 +18,7 @@ class App(Frame):
         self.parent.config(menu = menubar)
         fileMenu = Menu(menubar)
         fileMenu.add_command(label='Open Image', command=self.open_img)
-        fileMenu.add_command(label='Save')
+        fileMenu.add_command(label='Save File', command = lambda : self.save_img)
         menubar.add_cascade(label='File', menu=fileMenu)
 
         editMenu = Menu(menubar, tearoff=False)
@@ -57,19 +56,19 @@ class App(Frame):
         panel.image = img 
         panel.grid(row = 2) 
 
+    def save_image(self): 
+        files = [('All Files', '*.*'),  
+                ('PGM Files', '*.pgm'), 
+                ('PPM Files', '*.ppm'),
+                ('PBM Files', '*.pbm')
+                ('BMP Files', '*.BMP')] 
+        file = asksaveasfile(filetypes = files, defaultextension = files)
 
 def main():
     root = Tk()
     root.geometry('2560x1600')
     app = App(root)
     
-    # path = "../../img/sample.raw"
-    # with rawpy.imread(path) as raw:
-    #     rgb = raw.postprocess()
-    # imageio.imsave('default.tiff', rgb)
-    # image = ImageTk.PhotoImage(Image.open("../../img/sample.raw"))
-    # label = Label(image=image)
-    # label.pack()
     # Allow Window to be resizable 
     root.resizable(width = True, height = True) 
     root.mainloop()
