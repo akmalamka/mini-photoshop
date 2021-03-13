@@ -3,6 +3,7 @@ from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
+import os
 
 class App(Frame):
 
@@ -14,30 +15,33 @@ class App(Frame):
         self.fileMenu = Menu(self.menubar, tearoff=False)
         self.editMenu = Menu(self.menubar, tearoff=False)
         self.filename = ''
+        self.status = 'Initializing'
+        self.statusbar = Label(self.parent, text = self.status)
+        self.statusbar.pack(side=BOTTOM, fill=X)
         self.initUI()
 
     def initUI(self):
 
         self.parent.title("Mini Photoshop")
         self.parent.config(menu = self.menubar)
-        self.fileMenu.add_command(label="Open", command=self.openImage)
-        self.fileMenu.add_command(label="Save File", command = self.saveImage, state='disabled')
+        self.fileMenu.add_command(label="Open", command=self.open_image)
+        self.fileMenu.add_command(label="Save File", command = self.save_image, state='disabled')
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
         self.editMenu.add_command(label="Negative")
         self.editMenu.add_command(label="Grayscale")
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
-    def openfilename(self): 
+    def open_filename(self): 
 
         # open file dialog box to select image 
         # The dialogue box has a title "Open" 
         self.filename = filedialog.askopenfilename(title ='Open') 
         return self.filename 
 
-    def openImage(self): 
+    def open_image(self): 
         # # Select the Imagename from a folder 
-        x = self.openfilename()
+        x = self.open_filename()
         print('x = ', x)
 
         # opens the image 
@@ -51,15 +55,14 @@ class App(Frame):
 
         # set the image as img 
         self.panel.image = self.img 
-        self.panel.grid(row = 2)
-        # cari status bar buat naro si info2nya
-        labelimage = Label(self.parent, text=self.filename)
-        labelimage.grid(row = 4)
-        self.disableSubMenu('Open')
-        self.enableSubMenu('Save File')
+        self.panel.pack()
+        width, height = self.rawImg.size
+        self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+        self.disable_sub_menu('Open')
+        self.enable_sub_menu('Save File')
     
 
-    def saveImage(self): 
+    def save_image(self): 
         files = [('All Files', '*.*'),  
                 ('PGM Files', '*.pgm'), 
                 ('PPM Files', '*.ppm'),
@@ -71,13 +74,13 @@ class App(Frame):
         print(file)
         self.rawImg.save(file)
 
-    def enableSubMenu(self, menu):
+    def enable_sub_menu(self, menu):
         if (menu == 'Open'):
             self.fileMenu.entryconfig('Open', state='normal')
         elif (menu == 'Save File'):
             self.fileMenu.entryconfig('Save File', state='normal')
 
-    def disableSubMenu(self, menu):
+    def disable_sub_menu(self, menu):
         if (menu == 'Open'):
             self.fileMenu.entryconfig('Open', state='disabled')
         elif (menu == 'Save File'):
@@ -87,8 +90,6 @@ class App(Frame):
 def main():
     root = Tk()
     root.geometry('2560x1600')
-    # w = Label(root)
-    # w.pack()
     app = App(root)
     
     # Allow Window to be resizable 
