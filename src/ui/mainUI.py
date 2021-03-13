@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
+import rawpy
+import imageio
 
 class App(Frame):
 
@@ -60,7 +62,12 @@ def main():
     root = Tk()
     root.geometry('2560x1600')
     app = App(root)
-    # image = ImageTk.PhotoImage(Image.open("../../img/car-1.ppm"))
+    
+    # path = "../../img/sample.raw"
+    # with rawpy.imread(path) as raw:
+    #     rgb = raw.postprocess()
+    # imageio.imsave('default.tiff', rgb)
+    # image = ImageTk.PhotoImage(Image.open("../../img/sample.raw"))
     # label = Label(image=image)
     # label.pack()
     # Allow Window to be resizable 
