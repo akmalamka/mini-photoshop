@@ -9,30 +9,24 @@ class App(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
-        self.imageOpened = False
         self.panel = Label(self.parent)
         self.menubar = Menu(self.parent, tearoff=False)
         self.fileMenu = Menu(self.menubar, tearoff=False)
         self.editMenu = Menu(self.menubar, tearoff=False)
-        # self.controller = controller
+        self.filename = ''
         self.initUI()
 
     def initUI(self):
 
         self.parent.title("Mini Photoshop")
-        # menubar = Menu(self.parent, tearoff=False)
         self.parent.config(menu = self.menubar)
-        # fileMenu = Menu(self.menubar, tearoff=False)
         self.fileMenu.add_command(label="Open", command=self.openImage)
-        self.fileMenu.add_command(label="Save File", command = lambda : self.saveImage)
+        self.fileMenu.add_command(label="Save File", command = self.saveImage)
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
-        # editMenu = Menu(self.menubar, tearoff=False)
-        # self.editMenu.add_command(label="Blank the Canvas", command=self.blankTheCanvas)
         self.editMenu.add_command(label="Negative")
         self.editMenu.add_command(label="Grayscale")
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
-        # print(self.menubar.entrycget(0, 'state'))
 
     def onExit(self):
         self.quit()
@@ -41,26 +35,27 @@ class App(Frame):
 
         # open file dialog box to select image 
         # The dialogue box has a title "Open" 
-        filename = filedialog.askopenfilename(title ='Open') 
-        return filename 
+        self.filename = filedialog.askopenfilename(title ='Open') 
+        return self.filename 
 
     def openImage(self): 
-        # Select the Imagename from a folder 
-        x = self.openfilename() 
+        # # Select the Imagename from a folder 
+        x = self.openfilename()
 
         # opens the image 
-        img = Image.open(x) 
+        self.img = Image.open(x) 
 
         # PhotoImage class is used to add image to widgets, icons etc 
-        img = ImageTk.PhotoImage(img) 
+        self.img = ImageTk.PhotoImage(self.img) 
 
         # create a label 
-        self.panel = Label(self.parent, image = img) 
-        
+        self.panel = Label(self.parent, image = self.img)
+
         # set the image as img 
-        self.panel.image = img 
+        self.panel.image = self.img 
         self.panel.grid(row = 2)
-        self.imageOpened = True 
+        labelimage = Label(self.parent, text=self.filename)
+        labelimage.grid(row = 4)
         self.disableOpenSubMenu()
     
 
@@ -69,12 +64,13 @@ class App(Frame):
                 ('PGM Files', '*.pgm'), 
                 ('PPM Files', '*.ppm'),
                 ('PBM Files', '*.pbm'),
-                ('BMP Files', '*.BMP')] 
+                ('BMP Files', '*.bmp')] 
         file = asksaveasfile(filetypes = files, defaultextension = files)
-
-    # def blankTheCanvas(self):
-    #     self.panel = Label()
-    #     self.disableMenu()
+        if file is None:
+            return None
+        img_to_save=open(self.filename,"rb").read()
+        file.write(img_to_save)
+        file.close() 
 
     def enableOpenSubMenu(self):
         self.fileMenu.entryconfig('Open', state='normal')
