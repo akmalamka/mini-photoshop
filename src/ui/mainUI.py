@@ -28,8 +28,9 @@ class App(Frame):
         self.fileMenu.add_command(label="Save File", command = self.save_image, state='disabled')
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
-        self.editMenu.add_command(label="Negative")
-        self.editMenu.add_command(label="Grayscale")
+        self.editMenu.add_command(label="Negative", command=self.negative)
+        self.editMenu.add_command(label="Grayscale", command=self.grayscale)
+        self.editMenu.add_command(label="Image Brightening", command=self.image_brightening)
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
     def open_filename(self): 
@@ -42,8 +43,6 @@ class App(Frame):
     def open_image(self): 
         # # Select the Imagename from a folder 
         x = self.open_filename()
-        print('x = ', x)
-
         # opens the image 
         self.rawImg = Image.open(x) 
 
@@ -86,10 +85,41 @@ class App(Frame):
         elif (menu == 'Save File'):
             self.fileMenu.entryconfig('Save File', state='disabled')
 
+    def negative(self):
+        #return ip.negative(self.img)
+        print('negative')
+
+    def grayscale(self):
+        #return ip.grayscale(self.img)
+        print('grayscale')
+
+    # def print_val(self, val):
+
+
+    def image_brightening(self):
+        # Toplevel object which will  
+        # be treated as a new window 
+        scalarInputWindow = Toplevel(self.parent) 
+    
+        # sets the title of the 
+        # Toplevel widget 
+        scalarInputWindow.title("Scalar Value") 
+    
+        # sets the geometry of toplevel 
+        scalarInputWindow.geometry("200x200")
+        # var = DoubleVar() 
+
+        scale = Scale(scalarInputWindow, from_=0, to=255, orient=HORIZONTAL)
+        scale.pack()
+
+        scaleLabel = Label(scalarInputWindow)
+        selection = "Value = " + str(scale.get())
+        scaleLabel.config(text = selection)
+        scaleLabel.pack()
 
 def main():
     root = Tk()
-    root.geometry('2560x1600')
+    root.geometry('500x400')
     app = App(root)
     
     # Allow Window to be resizable 
