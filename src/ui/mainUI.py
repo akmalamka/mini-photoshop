@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
-from tkinter.filedialog import asksaveasfile 
+from tkinter.filedialog import asksaveasfile, asksaveasfilename
 
 class App(Frame):
 
@@ -21,15 +21,12 @@ class App(Frame):
         self.parent.title("Mini Photoshop")
         self.parent.config(menu = self.menubar)
         self.fileMenu.add_command(label="Open", command=self.openImage)
-        self.fileMenu.add_command(label="Save File", command = self.saveImage)
+        self.fileMenu.add_command(label="Save File", command = self.saveImage, state='disabled')
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
         self.editMenu.add_command(label="Negative")
         self.editMenu.add_command(label="Grayscale")
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
-
-    def onExit(self):
-        self.quit()
 
     def openfilename(self): 
 
@@ -41,12 +38,13 @@ class App(Frame):
     def openImage(self): 
         # # Select the Imagename from a folder 
         x = self.openfilename()
+        print('x = ', x)
 
         # opens the image 
-        self.img = Image.open(x) 
+        self.rawImg = Image.open(x) 
 
         # PhotoImage class is used to add image to widgets, icons etc 
-        self.img = ImageTk.PhotoImage(self.img) 
+        self.img = ImageTk.PhotoImage(self.rawImg) 
 
         # create a label 
         self.panel = Label(self.parent, image = self.img)
@@ -54,9 +52,11 @@ class App(Frame):
         # set the image as img 
         self.panel.image = self.img 
         self.panel.grid(row = 2)
+        # cari status bar buat naro si info2nya
         labelimage = Label(self.parent, text=self.filename)
         labelimage.grid(row = 4)
-        self.disableOpenSubMenu()
+        self.disableSubMenu('Open')
+        self.enableSubMenu('Save File')
     
 
     def saveImage(self): 
@@ -65,18 +65,23 @@ class App(Frame):
                 ('PPM Files', '*.ppm'),
                 ('PBM Files', '*.pbm'),
                 ('BMP Files', '*.bmp')] 
-        file = asksaveasfile(filetypes = files, defaultextension = files)
+        file = asksaveasfilename( filetypes = files, defaultextension = files)
         if file is None:
             return None
-        img_to_save=open(self.filename,"rb").read()
-        file.write(img_to_save)
-        file.close() 
+        print(file)
+        self.rawImg.save(file)
 
-    def enableOpenSubMenu(self):
-        self.fileMenu.entryconfig('Open', state='normal')
+    def enableSubMenu(self, menu):
+        if (menu == 'Open'):
+            self.fileMenu.entryconfig('Open', state='normal')
+        elif (menu == 'Save File'):
+            self.fileMenu.entryconfig('Save File', state='normal')
 
-    def disableOpenSubMenu(self):
-        self.fileMenu.entryconfig('Open', state='disabled')
+    def disableSubMenu(self, menu):
+        if (menu == 'Open'):
+            self.fileMenu.entryconfig('Open', state='disabled')
+        elif (menu == 'Save File'):
+            self.fileMenu.entryconfig('Save File', state='disabled')
 
 
 def main():
