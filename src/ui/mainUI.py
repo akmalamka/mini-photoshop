@@ -9,22 +9,30 @@ class App(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.imageOpened = False
+        self.panel = Label(self.parent)
+        self.menubar = Menu(self.parent, tearoff=False)
+        self.fileMenu = Menu(self.menubar, tearoff=False)
+        self.editMenu = Menu(self.menubar, tearoff=False)
+        # self.controller = controller
         self.initUI()
 
     def initUI(self):
 
         self.parent.title("Mini Photoshop")
-        menubar = Menu(self.parent, tearoff=False)
-        self.parent.config(menu = menubar)
-        fileMenu = Menu(menubar)
-        fileMenu.add_command(label='Open Image', command=self.open_img)
-        fileMenu.add_command(label='Save File', command = lambda : self.save_img)
-        menubar.add_cascade(label='File', menu=fileMenu)
+        # menubar = Menu(self.parent, tearoff=False)
+        self.parent.config(menu = self.menubar)
+        # fileMenu = Menu(self.menubar, tearoff=False)
+        self.fileMenu.add_command(label="Open", command=self.openImage)
+        self.fileMenu.add_command(label="Save File", command = lambda : self.saveImage)
+        self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
-        editMenu = Menu(menubar, tearoff=False)
-        editMenu.add_command(label="Negative")
-        editMenu.add_command(label='Grayscale')
-        menubar.add_cascade(label='Edit', menu=editMenu)
+        # editMenu = Menu(self.menubar, tearoff=False)
+        # self.editMenu.add_command(label="Blank the Canvas", command=self.blankTheCanvas)
+        self.editMenu.add_command(label="Negative")
+        self.editMenu.add_command(label="Grayscale")
+        self.menubar.add_cascade(label="Edit", menu=self.editMenu)
+        # print(self.menubar.entrycget(0, 'state'))
 
     def onExit(self):
         self.quit()
@@ -33,40 +41,53 @@ class App(Frame):
 
         # open file dialog box to select image 
         # The dialogue box has a title "Open" 
-        filename = filedialog.askopenfilename(title ='"Open') 
+        filename = filedialog.askopenfilename(title ='Open') 
         return filename 
 
-    def open_img(self): 
+    def openImage(self): 
         # Select the Imagename from a folder 
         x = self.openfilename() 
 
         # opens the image 
         img = Image.open(x) 
-        
-        # resize the image and apply a high-quality down sampling filter 
-        # img = img.resize((250, 250), Image.ANTIALIAS) 
 
         # PhotoImage class is used to add image to widgets, icons etc 
         img = ImageTk.PhotoImage(img) 
 
         # create a label 
-        panel = Label(self.parent, image = img) 
+        self.panel = Label(self.parent, image = img) 
         
         # set the image as img 
-        panel.image = img 
-        panel.grid(row = 2) 
+        self.panel.image = img 
+        self.panel.grid(row = 2)
+        self.imageOpened = True 
+        self.disableOpenSubMenu()
+    
 
-    def save_image(self): 
+    def saveImage(self): 
         files = [('All Files', '*.*'),  
                 ('PGM Files', '*.pgm'), 
                 ('PPM Files', '*.ppm'),
-                ('PBM Files', '*.pbm')
+                ('PBM Files', '*.pbm'),
                 ('BMP Files', '*.BMP')] 
         file = asksaveasfile(filetypes = files, defaultextension = files)
+
+    # def blankTheCanvas(self):
+    #     self.panel = Label()
+    #     self.disableMenu()
+
+    def enableOpenSubMenu(self):
+        self.fileMenu.entryconfig('Open', state='normal')
+
+    def disableOpenSubMenu(self):
+        self.fileMenu.entryconfig('Open', state='disabled')
+
 
 def main():
     root = Tk()
     root.geometry('2560x1600')
+    # w = Label(root)
+    # w.pack()
     app = App(root)
     
     # Allow Window to be resizable 
