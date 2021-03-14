@@ -1,45 +1,36 @@
+# Python program to demonstrate 
+# scale widget 
 
-import tkinter as tk
+from tkinter import *
 
-class App(object):
 
-    def __init__(self, parent):
+root = Tk() 
+root.geometry("400x300") 
 
-        self.root = parent
-        self.root.title("Main Frame")
-        self.frame = tk.Frame(parent)
-        self.frame.pack()
-        label = tk.Label(self.frame, text = "This is the main frame")
-        label.grid()
-        btn = tk.Button(self.frame, text= "Open the popup window", command = lambda : self.pop_up())
-        btn.grid(row=1)
+v1 = DoubleVar() 
 
-    def pop_up(self):
-    	self.root.withdraw()
-    	popUp(self)
+def show1(): 
+	
+	sel = "Horizontal Scale Value = " + str(v1.get()) 
+	l1.config(text = sel, font =("Courier", 14)) 
 
-class popUp(tk.Toplevel):
 
-    def __init__(self, original):
+s1 = Scale( root, variable = v1, 
+		from_ = 1, to = 100, 
+		orient = HORIZONTAL) 
 
-        self.original_frame = original
-        tk.Toplevel.__init__(self)
-        self.transient(root)
-        self.geometry("260x210")
-        self.lift()
-        label = tk.Label(self, text = "This is Popup window")
-        label.grid()
-        btn = tk.Button(self, text ="Close", command= lambda : self.on_close())
-        btn.grid(row =1)
+l3 = Label(root, text = "Horizontal Scaler") 
 
-    def on_close(self):
-    	self.destroy()
-    	root.update()
-    	root.deiconify()
+b1 = Button(root, text ="Display Horizontal", 
+			command = show1, 
+			bg = "yellow") 
 
-if __name__ == "__main__":
+l1 = Label(root) 
 
-    root = tk.Tk()
-    app = App(root)
-    root.geometry("200x150")
-    root.mainloop()
+
+s1.pack(anchor = CENTER) 
+l3.pack() 
+b1.pack(anchor = CENTER) 
+l1.pack() 
+
+root.mainloop() 

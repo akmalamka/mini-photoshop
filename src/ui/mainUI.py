@@ -20,6 +20,7 @@ class App(Frame):
         self.statusbar = Label(self.parent, text = self.status)
         self.statusbar.pack(side=BOTTOM, fill=X)
         self.imageArr = np.zeros((1,1), dtype=np.uint8)
+        self.brighteningScalarValue = DoubleVar()
         self.initUI()
 
     def initUI(self):
@@ -32,7 +33,7 @@ class App(Frame):
 
         self.editMenu.add_command(label="Negative", command=self.negative)
         self.editMenu.add_command(label="Grayscale", command=self.grayscale)
-        self.editMenu.add_command(label="Image Brightening", command =self.image_brightening)
+        self.editMenu.add_command(label="Image Brightening", command =self.imageBrighteningHandler)
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
     def open_filename(self): 
@@ -58,7 +59,7 @@ class App(Frame):
             self.rawImg = Image.fromarray(self.imageArr, 'RGB')
         elif (imageType == 'GRAYSCALE'):
             if (grayLevel < 255):
-                #aaa
+                #yang ini belom, kyknya pake matplotlib ajadeh wkkw
                 print('aaa')
             else:
                 self.imageArr = np.zeros((h, w), dtype=np.uint8)
@@ -115,27 +116,43 @@ class App(Frame):
         #return ip.grayscale(self.img)
         print('grayscale')
 
-    # def print_val(self, val):
+    def imageBrighteningHandler(self):
+        imageBrightenerWindow = ImageBrightenerWindow(self.parent)
 
 
-    def image_brightening(self):
-        # Toplevel object which will be treated as a new window 
-        scalarInputWindow = Toplevel(self.parent) 
-    
+
+class ImageBrightenerWindow(Frame):
+    def __init__(self, parent):
+        Frame.__init__(self, parent)
+        self.parent = parent
+        self.scalarInputWindow = Toplevel(self.parent) 
+        self.scaleLabel = Label(self.scalarInputWindow)
+        self.brighteningScaleAdd = DoubleVar()
+        self.initUI()
+
+    def initUI(self):
         # sets the title of the Toplevel widget 
-        scalarInputWindow.title("Scalar Value") 
+        self.scalarInputWindow.title("Scalar Value") 
     
         # sets the geometry of toplevel 
-        scalarInputWindow.geometry("200x200")
-        # var = DoubleVar() 
-
-        scale = Scale(scalarInputWindow, from_=0, to=255, orient=HORIZONTAL)
+        self.scalarInputWindow.geometry("200x200")
+        scale = Scale(self.scalarInputWindow, variable=self.brighteningScaleAdd, from_=-255, to=255, orient=HORIZONTAL)
+        showScaleButton = Button(self.scalarInputWindow, text ="Show Scale", command = self.show)
+        okButton = Button(self.scalarInputWindow, text ="OK", command = self.ok)
+        
         scale.pack()
+        showScaleButton.pack()
+        okButton.pack()
+        self.scaleLabel.pack()
 
-        scaleLabel = Label(scalarInputWindow)
-        selection = "Value = " + str(scale.get())
-        scaleLabel.config(text = selection)
-        scaleLabel.pack()
+    def show(self):
+        selection = "Value = " + str(self.brighteningScaleAdd.get())
+        self.scaleLabel.config(text = selection)
+    
+    def ok(self):
+        #panggil fungsi image brightening backend
+        self.scalarInputWindow.withdraw()
+
 
 def main():
     root = Tk()
