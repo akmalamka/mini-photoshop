@@ -1,38 +1,30 @@
 from tkinter import *
 
-def third_window(data):
-    top = Toplevel()
-    lbl = Label(top, text=data)
-    lbl.place(x=20,y=20)
-    top.wait_window()
+class GUI(Tk):
+    def __init__(self):
+        super().__init__()
+        self.geometry('600x400')
+        self.sum_var= StringVar()
+        Label(self, text="Main window").pack()
+        Button(self, text="To enter Data", command=self.entry_Fn).pack()
+        sum = Label(self, textvariable=self.sum_var)
+        sum.pack()
 
-def second_window(root, v):
-    def event_btn():
-        if len(v.get()) != 0:
-            top.destroy()
-    top = Toplevel()
-    top.geometry("400x400+200+200")
+    def entry_Fn(self):
+        self.level_1 = Toplevel(self)
+        Label(self.level_1, text = "level one").pack()
+        self.entry_1 = Entry(self.level_1)
+        self.entry_1.pack()
+        self.entry_2 = Entry(self.level_1)
+        self.entry_2.pack()
+        Button(self.level_1, text="submit", command=self.submitBtn).pack()
 
-    entry = Entry(top, textvariable = v, width=15)
-    entry.place(x=30,y=30)
-    btn = Button(top, text="Send", command = event_btn)
-    btn.place(x=80, y=80)
-    root.wait_window(top)
+    def submitBtn(self):
+        val_1 = self.entry_1.get()
+        val_2 = self.entry_2.get()
+        self.sum_var.set(int(val_1)+ int(val_2))
+        self.level_1.destroy()
 
-def main():
-    def event_btn():
-        second_window(root, v)
-        print(v.get())
-        root.withdraw()
-        third_window(v.get())
-    root = Tk()
-    root.geometry("200x200+100+100")
+root = GUI()
 
-    btn = Button(root, text="Test button", command = event_btn) 
-    btn.place(x=50, y=50)
-
-    v = StringVar()
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
+root.mainloop()
