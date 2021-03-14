@@ -4,6 +4,7 @@ from tkinter.ttk import *
 from PIL import ImageTk, Image
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 import os
+import numpy as np
 
 class App(Frame):
 
@@ -18,6 +19,7 @@ class App(Frame):
         self.status = 'Initializing'
         self.statusbar = Label(self.parent, text = self.status)
         self.statusbar.pack(side=BOTTOM, fill=X)
+        self.imageArr = np.zeros((1,1), dtype=np.uint8)
         self.initUI()
 
     def initUI(self):
@@ -30,21 +32,42 @@ class App(Frame):
 
         self.editMenu.add_command(label="Negative", command=self.negative)
         self.editMenu.add_command(label="Grayscale", command=self.grayscale)
-        self.editMenu.add_command(label="Image Brightening", command=self.image_brightening)
+        self.editMenu.add_command(label="Image Brightening", command =self.image_brightening)
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
     def open_filename(self): 
 
         # open file dialog box to select image 
-        # The dialogue box has a title "Open" 
         self.filename = filedialog.askopenfilename(title ='Open') 
         return self.filename 
 
     def open_image(self): 
         # # Select the Imagename from a folder 
-        x = self.open_filename()
-        # opens the image 
-        self.rawImg = Image.open(x) 
+        # x = self.open_filename()
+
+        #panggil fungsi backend yang nyimpen strukturnya
+
+        #simpen strukturnya
+
+        w, h = 512, 512
+        imageType = 'BINARY'
+        grayLevel = 255
+        if (imageType == 'RGB'):
+            self.imageArr = np.zeros((h, w, 3), dtype=np.uint8)
+            self.imageArr[0:256, 0:256] = [255, 0, 0] # red patch in upper left
+            self.rawImg = Image.fromarray(self.imageArr, 'RGB')
+        elif (imageType == 'GRAYSCALE'):
+            if (grayLevel < 255):
+                #aaa
+                print('aaa')
+            else:
+                self.imageArr = np.zeros((h, w), dtype=np.uint8)
+                self.imageArr[0:256, 0:256] = [125] # red patch in upper left
+                self.rawImg = Image.fromarray(self.imageArr, 'P')
+        elif (imageType == 'BINARY'):
+            self.imageArr = np.zeros((h, w), dtype=np.uint8)
+            self.imageArr[0:256, 0:256] = [1] # red patch in upper left
+            self.rawImg = Image.fromarray(self.imageArr, '1')
 
         # PhotoImage class is used to add image to widgets, icons etc 
         self.img = ImageTk.PhotoImage(self.rawImg) 
@@ -53,7 +76,6 @@ class App(Frame):
         self.panel = Label(self.parent, image = self.img)
 
         # set the image as img 
-        self.panel.image = self.img 
         self.panel.pack()
         width, height = self.rawImg.size
         self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
@@ -97,12 +119,10 @@ class App(Frame):
 
 
     def image_brightening(self):
-        # Toplevel object which will  
-        # be treated as a new window 
+        # Toplevel object which will be treated as a new window 
         scalarInputWindow = Toplevel(self.parent) 
     
-        # sets the title of the 
-        # Toplevel widget 
+        # sets the title of the Toplevel widget 
         scalarInputWindow.title("Scalar Value") 
     
         # sets the geometry of toplevel 
@@ -121,7 +141,7 @@ def main():
     root = Tk()
     root.geometry('500x400')
     app = App(root)
-    
+
     # Allow Window to be resizable 
     root.resizable(width = True, height = True) 
     root.mainloop()
