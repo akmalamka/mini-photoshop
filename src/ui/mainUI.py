@@ -15,6 +15,7 @@ class App(Frame):
         self.menubar = Menu(self.parent, tearoff=False)
         self.fileMenu = Menu(self.menubar, tearoff=False)
         self.editMenu = Menu(self.menubar, tearoff=False)
+        self.imageBrighteningMenu = Menu(self.editMenu, tearoff=False)
         self.filename = ''
         self.status = 'Initializing'
         self.statusbar = Label(self.parent, text = self.status)
@@ -24,7 +25,6 @@ class App(Frame):
         self.initUI()
 
     def initUI(self):
-
         self.parent.title("Mini Photoshop")
         self.parent.config(menu = self.menubar)
         self.fileMenu.add_command(label="Open", command=self.open_image)
@@ -33,7 +33,10 @@ class App(Frame):
 
         self.editMenu.add_command(label="Negative", command=self.negative)
         self.editMenu.add_command(label="Grayscale", command=self.grayscale)
-        self.editMenu.add_command(label="Image Brightening", command =self.imageBrighteningHandler)
+
+        self.imageBrighteningMenu.add_command(label="Addition with Scalar", command = lambda: self.imageBrighteningHandler(0))
+        self.imageBrighteningMenu.add_command(label="Multiplication with Scalar", command =lambda: self.imageBrighteningHandler(1))
+        self.editMenu.add_cascade(label="Image Brightening", menu=self.imageBrighteningMenu)
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
     def open_filename(self): 
@@ -116,8 +119,9 @@ class App(Frame):
         #return ip.grayscale(self.img)
         print('grayscale')
 
-    def imageBrighteningHandler(self):
+    def imageBrighteningHandler(self, id):
         imageBrightenerWindow = ImageBrightenerWindow(self.parent)
+        imageBrightenerWindow.id = id
 
 
 
@@ -128,10 +132,13 @@ class ImageBrightenerWindow(Frame):
         self.scalarInputWindow = Toplevel(self.parent) 
         self.scaleLabel = Label(self.scalarInputWindow)
         self.brighteningScaleAdd = DoubleVar()
+        self.id = 0
+        # self.id = id #id 0 untuk additional, id 2 untuk multiplication
         self.initUI()
 
     def initUI(self):
         # sets the title of the Toplevel widget 
+        # self.id = id #id 0 untuk additional, id 2 untuk multiplication
         self.scalarInputWindow.title("Scalar Value") 
     
         # sets the geometry of toplevel 
@@ -148,10 +155,17 @@ class ImageBrightenerWindow(Frame):
     def show(self):
         selection = "Value = " + str(self.brighteningScaleAdd.get())
         self.scaleLabel.config(text = selection)
+        # print(self.id)
     
     def ok(self):
         #panggil fungsi image brightening backend
+        if (self.id == 0):
+            print('abc')
+        elif (self.id == 1):
+            print('def')
         self.scalarInputWindow.withdraw()
+        self.parent.update()
+        self.parent.deiconify()
 
 
 def main():
