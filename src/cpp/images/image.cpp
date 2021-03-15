@@ -24,7 +24,6 @@ Image::Image() {
             }
         }
     }
-
 }
 
 Image::Image(int width, int height, int grayLevel) {
@@ -433,34 +432,24 @@ Image Image::bitPlaneSlice(int n) {
 // }
 
 // int* Image::distribution(int channel) {
-//     int d[this->grayLevel];
 
-//     for (int i = 0; i < this->grayLevel; i++) d[i] = 0;
+//     for (int i = 0; i < this->grayLevel; i++) this->distributions[channel][i] = 0;
 
 //     for (int i = 0; i < this->height; i++) {
 //         for (int j = 0; j < this->width; j++) {
-//             d[this->pixels[i][j][channel]]++;
+//             this->distributions[channel][this->pixels[i][j][channel]]++;
 //         }
 //     }
 
-//     return d;
+//     return this->distributions[channel];
 // }
 
 // int** Image::distributions() {
-//     int d[3][256];
-
-//     for (int i = 0; i < 3; i++)
-//     for (int j = 0; j < this->grayLevel; j++)
-//     d[i][j] = 0;
-
 //     for (int i = 0; i < 3; i++) {
-//         int[] e = this->distribution(i);
-//         for (int j = 0; j < this->grayLevel; j++) {
-//             d[i][j] = e[j];
-//         }
+        
 //     }
 
-//     return d;
+//     return this->distributions;
 // }
 
 // int** Image::channel() {

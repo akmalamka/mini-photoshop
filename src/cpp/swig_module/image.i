@@ -1,28 +1,23 @@
-/* file : gfg.i */
+/* file : pixel.i */
 
 /* name of module to use*/
-%module image_processing 
+%module image
 %{ 
 	/* Every thing in this file is being copied in 
 	wrapper file. We include the C header file necessary 
 	to compile the interface */
-	// #include "images/pixel.hpp"
-	// #include "images/structure.hpp"
-	// #include "images/pixel.hpp"
-	// #include "utils/exception.hpp"
-	// #include "utils/math.hpp"
-	// #include "utils/reader.hpp"
-	// #include "utils/string.hpp" 
-    // #include <iostream>
-    // #include <cstdlib>
-    // #include <cstdarg>
-    // #include <fstream>
+	#include "../images/image.hpp"
 
 	/* variable declaration*/
 	// double myvar; 
+	// int width;
+	// int height;
+	// int grayLevel;
+	// int*** pixels;
 %} 
 
 /* explicitly list functions and variables to be interfaced */
+// Image transpose();
 // double myvar; 
 // long long int fact(long long int n1); 
 // int my_mod(int m, int n); 
@@ -31,7 +26,4 @@
 include header file like this - 
 %include "gfg.h" 
 */
-%include "structure.i"
-%include "pixel.i"
-%include "reader.i"
-%include "string.i" 
+%include "../images/image.hpp" 

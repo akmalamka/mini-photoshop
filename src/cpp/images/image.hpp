@@ -47,7 +47,7 @@ class Image {
         Image bitPlaneSlice(int n);
 
         // int* distribution();
-        int* distribution(int channel);
+        // int* distribution(int channel);
         // int** distributions();
 
         // int** channel();
