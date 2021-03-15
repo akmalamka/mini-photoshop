@@ -257,19 +257,18 @@ class App(Frame):
         self.flipMenu.entryconfig("Flip Horizontal", state='normal')
         self.zoomMenu.entryconfig("Zoom In", state='normal')
         self.zoomMenu.entryconfig("Zoom Out", state='normal')
-        self.showHistogramMenu.entryconfig("Show Histogram Red", state='normal')
-        self.showHistogramMenu.entryconfig("Show Histogram Green", state='normal')
-        self.showHistogramMenu.entryconfig("Show Histogram Blue", state='normal')
-        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram  Red", state='normal')
-        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram Green", state='normal')
-        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram Blue", state='normal')
-
-            "Contrast Stretching": 25,
-            "Log Transformation": 26,
-            "Inverse Log Transformation": 27,
-            "Power Transformation": 28,
-            "Gray Level Slicing": 29,
-            "Bit Plane Slicing": 30
+        self.showHistogramMenu.entryconfig("Red", state='normal')
+        self.showHistogramMenu.entryconfig("Green", state='normal')
+        self.showHistogramMenu.entryconfig("Blue", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Red", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Green", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Blue", state='normal')
+        self.editMenu.entryconfig("Contrast Stretching", state='normal')
+        self.editMenu.entryconfig("Log Transformation", state='normal')
+        self.editMenu.entryconfig("Inverse Log Transformation", state='normal')
+        self.editMenu.entryconfig("Power Transformation", state='normal')
+        self.editMenu.entryconfig("Gray Level Slicing", state='normal')
+        self.editMenu.entryconfig("Bit Plane Slicing", state='normal')
 
     def negative(self, command):
         # ubah image object jadi negative
