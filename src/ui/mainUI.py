@@ -19,12 +19,17 @@ class App(Frame):
         self.imageBrighteningMenu = Menu(self.editMenu, tearoff=False)
         self.arithmeticsMenu = Menu(self.editMenu, tearoff=False)
         self.booleanMenu = Menu(self.editMenu, tearoff=False)
+        self.geometryMenu = Menu(self.editMenu, tearoff=False)
+        self.histogramMenu = Menu(self.editMenu, tearoff=False)
         self.filename = ''
         self.status = 'Initializing'
         self.statusbar = Label(self.parent, text = self.status)
         self.statusbar.pack(side=BOTTOM, fill=X)
         self.imageArr = np.zeros((1,1), dtype=np.uint8)
-        self.brighteningScalarValue = DoubleVar()
+        self.scalarValue = DoubleVar()
+        self.strVar = StringVar()
+        self.id = IntVar()
+        self.value = Label(self.parent, textvariable= self.strVar)
         self.initUI()
 
     def initUI(self):
@@ -34,48 +39,83 @@ class App(Frame):
         self.fileMenu.add_command(label="Save File", command = self.save_image, state='disabled')
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
-        self.editMenu.add_command(label="Negative", command=self.negative)
-        self.editMenu.add_command(label="Grayscale", command=self.grayscale)
+        self.editMenu.add_command(label="Negative", command= lambda: self.negative("Negative"))
+        self.editMenu.add_command(label="Grayscale", command=lambda: self.grayscale("Grayscale"))
 
-        self.imageBrighteningMenu.add_command(label="Addition with Scalar", command = lambda: self.image_brightening_handler(0))
-        self.imageBrighteningMenu.add_command(label="Multiplication with Scalar", command =lambda: self.image_brightening_handler(1))
+        self.imageBrighteningMenu.add_command(label="Addition with Scalar", command = lambda: self.scalar_input_window("Addition with Scalar"))
+        self.imageBrighteningMenu.add_command(label="Multiplication with Scalar", command = lambda: self.scalar_input_window("Multiplication with Scalar"))
         self.editMenu.add_cascade(label="Image Brightening", menu=self.imageBrighteningMenu)
 
-        self.arithmeticsMenu.add_command(label="Addition with Image", command = lambda: self.open_image(0))
-        self.arithmeticsMenu.add_command(label="Subtraction with Image", command =lambda: self.open_image(1))
+        self.arithmeticsMenu.add_command(label="Addition with Image", command = lambda: self.open_image("Addition with Image"))
+        self.arithmeticsMenu.add_command(label="Subtraction with Image", command =lambda: self.open_image("Subtraction with Image"))
         self.editMenu.add_cascade(label="Arithmetics", menu=self.arithmeticsMenu)
 
-        self.booleanMenu.add_command(label="And with Image", command = lambda: self.open_image(2))
-        self.booleanMenu.add_command(label="Not with Image", command =lambda: self.open_image(3))
-        self.booleanMenu.add_command(label="Or with Image", command = lambda: self.open_image(4))
-        self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image(5))
+        self.booleanMenu.add_command(label="And with Image", command = lambda: self.open_image("And with Image"))
+        self.booleanMenu.add_command(label="Not with Image", command =lambda: self.open_image("Not with Image"))
+        self.booleanMenu.add_command(label="Or with Image", command = lambda: self.open_image("Or with Image"))
+        self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image("Xor with Image"))
         self.editMenu.add_cascade(label="Boolean", menu=self.booleanMenu)
+
+        self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"))
+        self.geometryMenu.add_command(label="Rotation", command =lambda: self.open_image("Rotation"))
+        self.geometryMenu.add_command(label="Flip", command = lambda: self.open_image("Flip"))
+        self.geometryMenu.add_command(label="Zoom", command =lambda: self.open_image("Zoom"))
+        self.editMenu.add_cascade(label="Geometry", menu=self.geometryMenu)
 
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
+        self.histogramMenu.add_command(label="Show Histogram", command =lambda: self.open_image("Show Histogram"))
 
+        self.menubar.add_cascade(label="Histogram", menu=self.histogramMenu)
+        self.value.pack()
+
+    def idHandler(self, command):
+        switcher = { 
+            "Negative" : 0, 
+            "Grayscale" : 1, 
+            "Addition with Scalar" : 2, 
+            "Multiplication with Scalar" : 3,
+            "Addition with Image" : 4,
+            "Subtraction with Image" : 5,
+            "And with Image": 6,
+            "Not with Image" : 7,
+            "Or with Image" : 8,
+            "Xor with Image" : 9,
+            "Translation" : 10,
+            "Rotation" : 11,
+            "Flip" : 12,
+            "Zoom" : 13,
+            "Show Histogram" : 14,
+        } 
+        idTemp = switcher.get(command, lambda: -1)
+        if (not idTemp == -1):
+            self.id.set(int(idTemp))
+
+        print(str(self.id.get()))
+        
     def open_filename(self): 
         # open file dialog box to select image 
         self.filename = filedialog.askopenfilename(title ='Open') 
         return self.filename 
 
-    def open_image(self, option = -1):
-        if (option == 0):
+    def open_image(self, command):
+        self.idHandler(command)
+        if (self.id == 0):
             #Addition with Image
             print('0')
-        elif (option == 1):
+        elif (self.id == 1):
             #Subtraction with Image
             print('1')
-        elif (option == 2):
+        elif (self.id == 2):
             #And with Image
             print('2')
-        elif (option == 3):
+        elif (self.id == 3):
             #Not with Image
             print('3')
-        elif (option == 4):
+        elif (self.id == 4):
             #Or with Image
             print('4')
-        elif (option == 5):
+        elif (self.id == 5):
             #Xor with Image
             print('5')
         else:
@@ -162,61 +202,93 @@ class App(Frame):
         elif (menu == 'Save File'):
             self.fileMenu.entryconfig('Save File', state='disabled')
 
-    def negative(self):
+    def negative(self, command):
         # ubah image object jadi negative
         # self.imageObject.negative()
+        self.idHandler(command)
         print('negative')
 
-    def grayscale(self):
+    def grayscale(self, command):
         # ubah image object jadi grayscale
         #self.imageObject.grayscale()
+        self.idHandler(command)
         print('grayscale')
 
-    def image_brightening_handler(self, id):
-        imageBrightenerWindow = ImageBrightenerWindow(self.parent)
-        imageBrightenerWindow.id = id
-
-
-
-class ImageBrightenerWindow(Frame):
-    def __init__(self, parent):
-        Frame.__init__(self, parent)
-        self.parent = parent
-        self.scalarInputWindow = Toplevel(self.parent) 
-        self.scaleLabel = Label(self.scalarInputWindow)
-        self.brighteningScaleAdd = DoubleVar()
-        self.id = 0 #id 0 untuk additional, id 2 untuk multiplication
-        self.initUI()
-
-    def initUI(self):
+    def scalar_input_window(self, command):
+        self.idHandler(command)
+        self.scalarInputWindow = Toplevel(self.parent)
         # sets the title of the Toplevel widget 
         self.scalarInputWindow.title("Scalar Value") 
     
         # sets the geometry of toplevel 
         self.scalarInputWindow.geometry("200x200")
-        scale = Scale(self.scalarInputWindow, variable=self.brighteningScaleAdd, from_=-255, to=255, orient=HORIZONTAL)
+        self.scaleLabel = Label(self.scalarInputWindow)
+        scale = Scale(self.scalarInputWindow, variable=self.scalarValue, from_=-255, to=255, orient=HORIZONTAL)
         showScaleButton = Button(self.scalarInputWindow, text ="Show Scale", command = self.show)
         okButton = Button(self.scalarInputWindow, text ="OK", command = self.ok)
-        
+
         scale.pack()
         showScaleButton.pack()
         okButton.pack()
         self.scaleLabel.pack()
 
     def show(self):
-        selection = "Value = " + str(self.brighteningScaleAdd.get())
+        selection = "Value = " + str(int(self.scalarValue.get()))
         self.scaleLabel.config(text = selection)
-        # print(self.id)
     
     def ok(self):
         #panggil fungsi image brightening backend
-        if (self.id == 0):
-            print('abc')
-        elif (self.id == 1):
-            print('def')
-        self.scalarInputWindow.withdraw()
-        self.parent.update()
-        self.parent.deiconify()
+        # if (self.id == 0):
+        #     print('abc')
+        # elif (self.id == 1):
+        #     print('def')
+        # self.scalarInputWindow.withdraw()
+        # self.parent.update()
+        # self.parent.deiconify()
+        # scalar = self.
+        self.strVar.set(str(int(self.scalarValue.get())))
+        self.scalarInputWindow.destroy()
+
+
+
+# class ImageBrightenerWindow(Frame):
+#     def __init__(self, parent):
+#         Frame.__init__(self, parent)
+#         self.parent = parent
+#         self.scalarInputWindow = Toplevel(self.parent) 
+#         self.scaleLabel = Label(self.scalarInputWindow)
+#         self.brighteningScaleAdd = DoubleVar()
+#         self.id = 0 #id 0 untuk additional, id 2 untuk multiplication
+#         self.initUI()
+
+#     def initUI(self):
+#         # sets the title of the Toplevel widget 
+#         self.scalarInputWindow.title("Scalar Value") 
+    
+#         # sets the geometry of toplevel 
+#         self.scalarInputWindow.geometry("200x200")
+#         scale = Scale(self.scalarInputWindow, variable=self.brighteningScaleAdd, from_=-255, to=255, orient=HORIZONTAL)
+#         showScaleButton = Button(self.scalarInputWindow, text ="Show Scale", command = self.show)
+#         okButton = Button(self.scalarInputWindow, text ="OK", command = self.ok)
+        
+#         scale.pack()
+#         showScaleButton.pack()
+#         okButton.pack()
+#         self.scaleLabel.pack()
+
+#     def show(self):
+#         selection = "Value = " + str(int(self.brighteningScaleAdd.get()))
+#         self.scaleLabel.config(text = selection)
+    
+#     def ok(self):
+#         #panggil fungsi image brightening backend
+#         if (self.id == 0):
+#             print('abc')
+#         elif (self.id == 1):
+#             print('def')
+#         self.scalarInputWindow.withdraw()
+#         self.parent.update()
+#         self.parent.deiconify()
 
 
 def main():
