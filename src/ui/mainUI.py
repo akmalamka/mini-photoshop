@@ -35,8 +35,8 @@ class App(Frame):
     def initUI(self):
         self.parent.title("Mini Photoshop")
         self.parent.config(menu = self.menubar)
-        self.fileMenu.add_command(label="Open", command=self.open_image)
-        self.fileMenu.add_command(label="Save File", command = self.save_image, state='disabled')
+        self.fileMenu.add_command(label="Open", command=lambda: self.open_image("Open"))
+        self.fileMenu.add_command(label="Save File", command = lambda: self.save_image("Save File"), state='disabled')
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
         self.editMenu.add_command(label="Negative", command= lambda: self.negative("Negative"))
@@ -71,21 +71,23 @@ class App(Frame):
 
     def idHandler(self, command):
         switcher = { 
-            "Negative" : 0, 
-            "Grayscale" : 1, 
-            "Addition with Scalar" : 2, 
-            "Multiplication with Scalar" : 3,
-            "Addition with Image" : 4,
-            "Subtraction with Image" : 5,
-            "And with Image": 6,
-            "Not with Image" : 7,
-            "Or with Image" : 8,
-            "Xor with Image" : 9,
-            "Translation" : 10,
-            "Rotation" : 11,
-            "Flip" : 12,
-            "Zoom" : 13,
-            "Show Histogram" : 14,
+            "Open" : 0,
+            "Save File": 1,
+            "Negative" : 2, 
+            "Grayscale" : 3, 
+            "Addition with Scalar" : 4, 
+            "Multiplication with Scalar" : 5,
+            "Addition with Image" : 6,
+            "Subtraction with Image" : 7,
+            "And with Image": 8,
+            "Not with Image" : 9,
+            "Or with Image" : 10,
+            "Xor with Image" : 11,
+            "Translation" : 12,
+            "Rotation" : 13,
+            "Flip" : 14,
+            "Zoom" : 15,
+            "Show Histogram" : 16,
         } 
         idTemp = switcher.get(command, lambda: -1)
         if (not idTemp == -1):
@@ -173,7 +175,8 @@ class App(Frame):
             self.enable_sub_menu('Save File')
     
 
-    def save_image(self): 
+    def save_image(self, command):
+        self.idHandler(command) 
         files = [('All Files', '*.*'),  
                 ('PGM Files', '*.pgm'), 
                 ('PPM Files', '*.ppm'),
