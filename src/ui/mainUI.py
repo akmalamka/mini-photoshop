@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from PIL import ImageTk, Image
+import matplotlib.pyplot as plt
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 import os
 import numpy as np
@@ -12,29 +13,30 @@ class App(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
-        self.panel = Label(self.parent)
+        self.mainPanel = Label(self.parent) # panel yang nampilin gambar
         self.menubar = Menu(self.parent, tearoff=False)
         self.fileMenu = Menu(self.menubar, tearoff=False)
         self.editMenu = Menu(self.menubar, tearoff=False)
+        self.histogramMenu = Menu(self.menubar, tearoff=False)
         self.imageBrighteningMenu = Menu(self.editMenu, tearoff=False)
         self.arithmeticsMenu = Menu(self.editMenu, tearoff=False)
         self.booleanMenu = Menu(self.editMenu, tearoff=False)
         self.geometryMenu = Menu(self.editMenu, tearoff=False)
-        self.histogramMenu = Menu(self.editMenu, tearoff=False)
         self.rotationMenu = Menu(self.editMenu, tearoff=False)
         self.flipMenu = Menu(self.editMenu, tearoff=False)
         self.zoomMenu = Menu(self.editMenu, tearoff=False)
+        self.showHistogramMenu = Menu(self.histogramMenu, tearoff=False)
+        self.showNormalizedHistogramMenu = Menu(self.histogramMenu, tearoff=False)
         self.filename = ''
         self.status = 'Initializing'
         self.statusbar = Label(self.parent, text = self.status)
         self.statusbar.pack(side=BOTTOM, fill=X)
-        self.imageArrMain = np.zeros((1,1), dtype=np.uint8) #array image utama
-        self.imageArrOperation = np.zeros((1,1), dtype=np.uint8) #array image yang akan dioperasikan
+        self.imageArrMain = np.zeros((1,1), dtype=np.uint8) #array image utama hasil dari backend
+        self.imageArrOperation = np.zeros((1,1), dtype=np.uint8) #array image yang akan dioperasikan 
         self.scalarValue = DoubleVar()
         self.id = IntVar() #id command yang diberikan
         self.firstEntry = StringVar()
         self.secondEntry = StringVar()
-        self.value = Label(self.parent, textvariable= self.firstEntry)
         self.initUI()
 
     def initUI(self):
@@ -67,8 +69,7 @@ class App(Frame):
         self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image("Xor with Image"), state='disabled')
         self.editMenu.add_cascade(label="Boolean", menu=self.booleanMenu)
 
-        # self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"), state='disabled')
-        self.geometryMenu.add_command(label="Translation", command = lambda: self.two_entry_input("Translation"))
+        self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"), state='disabled')
 
         self.rotationMenu.add_command(label="Rotation 90 Clockwise", command = lambda: self.rotation("Rotation 90 Clockwise"), state='disabled')
         self.rotationMenu.add_command(label="Rotation 90 Counter Clockwise", command =lambda: self.rotation("Rotation 90 Counter Clockwise"), state='disabled')
@@ -86,12 +87,18 @@ class App(Frame):
 
         self.menubar.add_cascade(label="Edit", menu=self.editMenu)
 
-        self.histogramMenu.add_command(label="Show Histogram", command =lambda: self.open_image("Show Histogram"), state='disabled')
-        self.histogramMenu.add_command(label="Show Normalized Histogram", command =lambda: self.open_image("Show Normalized Histogram"), state='disabled')
+        self.showHistogramMenu.add_command(label="Red", command = lambda: self.show_histogram("Show Histogram Red", 'red'), state='disabled')
+        self.showHistogramMenu.add_command(label="Green", command =lambda: self.show_histogram("Show Histogram Green", 'green'), state='disabled')
+        self.showHistogramMenu.add_command(label="Blue", command =lambda: self.show_histogram("Show Histogram Blue", 'blue'), state='disabled')
+        self.histogramMenu.add_cascade(label="Show Histogram", menu=self.showHistogramMenu)
+
+        self.showNormalizedHistogramMenu.add_command(label="Red", command = lambda: self.show_histogram("Show Normalized Histogram Red", 'red'), state='disabled')
+        self.showNormalizedHistogramMenu.add_command(label="Green", command =lambda: self.show_histogram("Show Normalized Histogram Green", 'green'), state='disabled')
+        self.showNormalizedHistogramMenu.add_command(label="Blue", command =lambda: self.show_histogram("Show Normalized Histogram Blue", 'blue'), state='disabled')
+        self.histogramMenu.add_cascade(label="Show Normalized Histogram", menu=self.showNormalizedHistogramMenu)
 
         self.menubar.add_cascade(label="Histogram", menu=self.histogramMenu)
-        self.value.pack()
-
+        
     def idHandler(self, command):
         switcher = { 
             "Open" : 0,
@@ -109,18 +116,22 @@ class App(Frame):
             "Translation" : 12,
             "Rotation 90 Clockwise": 13,
             "Rotation 90 Counter Clockwise": 14,
-            "Flip Vertical" : 14,
-            "Flip Horizontal" : 15,
-            "Zoom In" : 16,
-            "Zoom Out" : 17,
-            "Show Histogram" : 18,
-            "Show Normalized Histogram" : 19,
-            "Contrast Stretching": 20,
-            "Log Transformation": 21,
-            "Inverse Log Transformation": 22,
-            "Power Transformation": 23,
-            "Gray Level Slicing": 24,
-            "Bit Plane Slicing": 25
+            "Flip Vertical" : 15,
+            "Flip Horizontal" : 16,
+            "Zoom In" : 17,
+            "Zoom Out" : 18,
+            "Show Histogram Red" : 19,
+            "Show Histogram Green" : 20,
+            "Show Histogram Blue" : 21,
+            "Show Normalized Histogram Red" : 22,
+            "Show Normalized Histogram Green" : 23,
+            "Show Normalized Histogram Blue" : 24,
+            "Contrast Stretching": 25,
+            "Log Transformation": 26,
+            "Inverse Log Transformation": 27,
+            "Power Transformation": 28,
+            "Gray Level Slicing": 29,
+            "Bit Plane Slicing": 30
         } 
 
         idTemp = switcher.get(command, lambda: -1)
@@ -132,11 +143,19 @@ class App(Frame):
         self.filename = filedialog.askopenfilename(title ='Open') 
         return self.filename 
 
+    def show_image(self):
+        self.img = ImageTk.PhotoImage(self.rawImg) # photo image class tkinter
+        self.mainPanel = Label(image = self.img)
+        self.mainPanel.pack()
+        width, height = self.rawImg.size
+        self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+
+
     def open_image(self, command):
         self.idHandler(command)
         # # Select the Imagename from a folder
         x = self.open_filename()
-        self.rawImg = Image.open(x)
+        self.rawImg = Image.open(x) # Image Object PIL
 
         if (self.id.get() == 0):
             #Open Image at the beginning
@@ -177,15 +196,17 @@ class App(Frame):
             #     self.rawImg = Image.fromarray(self.imageArrMain, '1')
 
             # PhotoImage class is used to add image to widgets, icons etc 
-            self.img = ImageTk.PhotoImage(self.rawImg) 
+            # self.img = ImageTk.PhotoImage(self.rawImg) 
 
             # create a label 
-            self.panel = Label(self.parent, image = self.img)
+            # self.panel = Label(self.parent, image = self.img)
 
             # set the image as img 
-            self.panel.pack()
-            width, height = self.rawImg.size
-            self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+            # self.panel.pack()
+            # width, height = self.rawImg.size
+            # self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+            # panggil fungsi backend, kasih parameter np.array(self.rawImg)
+            self.show_image()
             self.disable_sub_menu('Open')
             
         else:
@@ -213,17 +234,9 @@ class App(Frame):
         self.rawImg.save(file)
 
     def enable_sub_menu(self, menu):
-        # if (menu == 'Open'):
-        #     self.fileMenu.entryconfig('Open', state='normal')
-        # elif (menu == 'Save File'):
-        #     self.fileMenu.entryconfig('Save File', state='normal')
         self.fileMenu.entryconfig(menu, state='normal')
 
     def disable_sub_menu(self, menu):
-        # if (menu == 'Open'):
-        #     self.fileMenu.entryconfig('Open', state='disabled')
-        # elif (menu == 'Save File'):
-        #     self.fileMenu.entryconfig('Save File', state='disabled')
         self.fileMenu.entryconfig(menu, state='disabled')
 
     def enable_all_sub_menu(self):
@@ -244,7 +257,19 @@ class App(Frame):
         self.flipMenu.entryconfig("Flip Horizontal", state='normal')
         self.zoomMenu.entryconfig("Zoom In", state='normal')
         self.zoomMenu.entryconfig("Zoom Out", state='normal')
-        self.histogramMenu.entryconfig("Show Histogram", state='normal')
+        self.showHistogramMenu.entryconfig("Show Histogram Red", state='normal')
+        self.showHistogramMenu.entryconfig("Show Histogram Green", state='normal')
+        self.showHistogramMenu.entryconfig("Show Histogram Blue", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram  Red", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram Green", state='normal')
+        self.showNormalizedHistogramMenu.entryconfig("Show Normalized Histogram Blue", state='normal')
+
+            "Contrast Stretching": 25,
+            "Log Transformation": 26,
+            "Inverse Log Transformation": 27,
+            "Power Transformation": 28,
+            "Gray Level Slicing": 29,
+            "Bit Plane Slicing": 30
 
     def negative(self, command):
         # ubah image object jadi negative
@@ -326,6 +351,15 @@ class App(Frame):
         self.idHandler(command)
         #conditional kalo flip vertical atau horizontal
         print('flip') 
+
+    def show_histogram(self, command, color):
+        self.idHandler(command)
+        a=np.array([1,2,3,4,4,4,2,1,1,1,1, 256, 135])
+        plt.title('Histogram')
+        plt.xlabel('Value')
+        plt.ylabel('Pixel Frequency')
+        plt.hist(a, bins = 256, range=[0, 256], color=color)
+        plt.show()
     
 
 def main():
