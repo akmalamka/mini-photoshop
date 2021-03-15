@@ -31,9 +31,10 @@ class App(Frame):
         self.imageArrMain = np.zeros((1,1), dtype=np.uint8) #array image utama
         self.imageArrOperation = np.zeros((1,1), dtype=np.uint8) #array image yang akan dioperasikan
         self.scalarValue = DoubleVar()
-        self.strVar = StringVar()
         self.id = IntVar() #id command yang diberikan
-        self.value = Label(self.parent, textvariable= self.strVar)
+        self.firstEntry = StringVar()
+        self.secondEntry = StringVar()
+        self.value = Label(self.parent, textvariable= self.firstEntry)
         self.initUI()
 
     def initUI(self):
@@ -45,6 +46,12 @@ class App(Frame):
 
         self.editMenu.add_command(label="Negative", command= lambda: self.negative("Negative"), state='disabled')
         self.editMenu.add_command(label="Grayscale", command=lambda: self.grayscale("Grayscale"), state='disabled')
+        self.editMenu.add_command(label="Contrast Stretching", command= lambda: self.negative("Contrast Stretching"), state='disabled')
+        self.editMenu.add_command(label="Log Transformation", command=lambda: self.grayscale("Log Transformation"), state='disabled')
+        self.editMenu.add_command(label="Inverse Log Transformation", command= lambda: self.negative("Inverse Log Transformation"), state='disabled')
+        self.editMenu.add_command(label="Power Transformation", command=lambda: self.grayscale("Power Transformation"), state='disabled')
+        self.editMenu.add_command(label="Gray Level Slicing", command= lambda: self.negative("Gray Level Slicing"), state='disabled')
+        self.editMenu.add_command(label="Bit Plane Slicing", command=lambda: self.grayscale("Bit Plane Slicing"), state='disabled')
 
         self.imageBrighteningMenu.add_command(label="Addition with Scalar", command = lambda: self.scalar_input_window("Addition with Scalar"), state='disabled')
         self.imageBrighteningMenu.add_command(label="Multiplication with Scalar", command = lambda: self.scalar_input_window("Multiplication with Scalar"), state='disabled')
@@ -60,14 +67,15 @@ class App(Frame):
         self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image("Xor with Image"), state='disabled')
         self.editMenu.add_cascade(label="Boolean", menu=self.booleanMenu)
 
-        self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"), state='disabled')
+        # self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"), state='disabled')
+        self.geometryMenu.add_command(label="Translation", command = lambda: self.two_entry_input("Translation"))
 
-        self.rotationMenu.add_command(label="Rotation 90 Clockwise", command = lambda: self.open_image("Rotation 90 Clockwise"), state='disabled')
-        self.rotationMenu.add_command(label="Rotation 90 Counter Clockwise", command =lambda: self.open_image("Rotation 90 Counter Clockwise"), state='disabled')
+        self.rotationMenu.add_command(label="Rotation 90 Clockwise", command = lambda: self.rotation("Rotation 90 Clockwise"), state='disabled')
+        self.rotationMenu.add_command(label="Rotation 90 Counter Clockwise", command =lambda: self.rotation("Rotation 90 Counter Clockwise"), state='disabled')
         self.geometryMenu.add_cascade(label="Rotation", menu=self.rotationMenu)
 
-        self.flipMenu.add_command(label="Flip Vertical", command = lambda: self.open_image("Flip Vertical"), state='disabled')
-        self.flipMenu.add_command(label="Flip Horizontal", command =lambda: self.open_image("Flip Horizontal"), state='disabled')
+        self.flipMenu.add_command(label="Flip Vertical", command = lambda: self.flip("Flip Vertical"), state='disabled')
+        self.flipMenu.add_command(label="Flip Horizontal", command =lambda: self.flip("Flip Horizontal"), state='disabled')
         self.geometryMenu.add_cascade(label="Flip", menu=self.flipMenu)
 
         self.zoomMenu.add_command(label="Zoom In", command = lambda: self.open_image("Zoom In"), state='disabled')
@@ -107,13 +115,18 @@ class App(Frame):
             "Zoom Out" : 17,
             "Show Histogram" : 18,
             "Show Normalized Histogram" : 19,
+            "Contrast Stretching": 20,
+            "Log Transformation": 21,
+            "Inverse Log Transformation": 22,
+            "Power Transformation": 23,
+            "Gray Level Slicing": 24,
+            "Bit Plane Slicing": 25
         } 
+
         idTemp = switcher.get(command, lambda: -1)
         if (not idTemp == -1):
             self.id.set(int(idTemp))
 
-        print(str(self.id.get()))
-        
     def open_filename(self): 
         # open file dialog box to select image 
         self.filename = filedialog.askopenfilename(title ='Open') 
@@ -122,8 +135,6 @@ class App(Frame):
     def open_image(self, command):
         self.idHandler(command)
         # # Select the Imagename from a folder
-        print('id')
-        print(self.id.get()) 
         x = self.open_filename()
         self.rawImg = Image.open(x)
 
@@ -179,7 +190,6 @@ class App(Frame):
             
         else:
             self.imageArrOperation = np.array(self.rawImg)
-            print(self.imageArrOperation.shape)
             #panggil fungsi yang ngelakuin operasi2nya di backend
         self.enable_sub_menu('Save File')
         self.enable_all_sub_menu()
@@ -228,9 +238,12 @@ class App(Frame):
         self.booleanMenu.entryconfig("Or with Image", state='normal')
         self.booleanMenu.entryconfig("Xor with Image", state='normal')
         self.geometryMenu.entryconfig("Translation", state='normal')
-        self.geometryMenu.entryconfig("Rotation", state='normal')
-        self.geometryMenu.entryconfig("Flip", state='normal')
-        self.geometryMenu.entryconfig("Zoom", state='normal')
+        self.rotationMenu.entryconfig("Rotation 90 Clockwise", state='normal')
+        self.rotationMenu.entryconfig("Rotation 90 Counter Clockwise", state='normal')
+        self.flipMenu.entryconfig("Flip Vertical", state='normal')
+        self.flipMenu.entryconfig("Flip Horizontal", state='normal')
+        self.zoomMenu.entryconfig("Zoom In", state='normal')
+        self.zoomMenu.entryconfig("Zoom Out", state='normal')
         self.histogramMenu.entryconfig("Show Histogram", state='normal')
 
     def negative(self, command):
@@ -269,14 +282,56 @@ class App(Frame):
     
     def ok(self):
         #panggil fungsi image brightening backend
-        self.strVar.set(str(int(self.scalarValue.get())))
-        self.scalarInputWindow.destroy()
+        id = self.id.get()
+        if (id == 4 or id == 5):
+            self.scalarInputWindow.destroy()
+        elif (id == 12):
+            try:
+                int(self.firstEntry.get())
+                int(self.secondEntry.get())
+                self.twoEntryInputWindow.destroy()
+            except ValueError:
+                self.feedback.config(text='Masukan hanya bisa integer, silakan coba lagi')
+            
+
+    def two_entry_input(self, command):
+        self.idHandler(command)
+        self.twoEntryInputWindow = Toplevel(self.parent)
+        # sets the title of the Toplevel widget 
+        self.twoEntryInputWindow.title("X and Y Value") 
+    
+        # sets the geometry of toplevel 
+        self.twoEntryInputWindow.geometry("330x170")
+
+        label1 = Label(self.twoEntryInputWindow, text='X').place(x = 30, y = 30)
+        entry1 = Entry(self.twoEntryInputWindow, textvariable=self.firstEntry).place(x = 80, y = 30)
+        label2 = Label(self.twoEntryInputWindow, text='Y').place(x = 30, y = 60)
+        entry2 = Entry(self.twoEntryInputWindow, textvariable=self.secondEntry).place(x = 80, y = 60)
+        okButton = Button(self.twoEntryInputWindow, text ="OK", command = self.ok)
+        self.feedback = Label(self.twoEntryInputWindow, text='')
+
+        okButton.pack(side=BOTTOM, pady = 7)
+        self.feedback.pack(side=BOTTOM, pady=12)
+
+    def rotation(self, command):
+        # rotate image object sesuai command
+        #self.imageObject.grayscale()
+        self.idHandler(command)
+        #conditional kalo 90 cw dan ccw
+        print('rotation')
+
+    def flip(self, command):
+        # flip image object sesuai command
+        #self.imageObject.grayscale()
+        self.idHandler(command)
+        #conditional kalo flip vertical atau horizontal
+        print('flip') 
+    
 
 def main():
     root = Tk()
     root.geometry('500x400')
     app = App(root)
-
     # Allow Window to be resizable 
     root.resizable(width = True, height = True) 
     root.mainloop()
