@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 import os
 import numpy as np
-#import image_processing as ip
+import image
 
 class App(Frame):
 
