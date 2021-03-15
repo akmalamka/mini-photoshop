@@ -48,12 +48,12 @@ class App(Frame):
 
         self.editMenu.add_command(label="Negative", command= lambda: self.negative("Negative"), state='disabled')
         self.editMenu.add_command(label="Grayscale", command=lambda: self.grayscale("Grayscale"), state='disabled')
-        self.editMenu.add_command(label="Contrast Stretching", command= lambda: self.negative("Contrast Stretching"), state='disabled')
-        self.editMenu.add_command(label="Log Transformation", command=lambda: self.grayscale("Log Transformation"), state='disabled')
-        self.editMenu.add_command(label="Inverse Log Transformation", command= lambda: self.negative("Inverse Log Transformation"), state='disabled')
-        self.editMenu.add_command(label="Power Transformation", command=lambda: self.grayscale("Power Transformation"), state='disabled')
-        self.editMenu.add_command(label="Gray Level Slicing", command= lambda: self.negative("Gray Level Slicing"), state='disabled')
-        self.editMenu.add_command(label="Bit Plane Slicing", command=lambda: self.grayscale("Bit Plane Slicing"), state='disabled')
+        self.editMenu.add_command(label="Contrast Stretching", command= lambda: self.two_entry_input("Contrast Stretching"), state='disabled')
+        self.editMenu.add_command(label="Log Transformation", command=lambda: self.scalar_input_window("Log Transformation"), state='disabled')
+        self.editMenu.add_command(label="Inverse Log Transformation", command= lambda: self.scalar_input_window("Inverse Log Transformation"), state='disabled')
+        self.editMenu.add_command(label="Power Transformation", command=lambda: self.scalar_input_window("Power Transformation"), state='disabled')
+        self.editMenu.add_command(label="Gray Level Slicing", command= lambda: self.two_entry_input("Gray Level Slicing"), state='disabled')
+        self.editMenu.add_command(label="Bit Plane Slicing", command=lambda: self.scalar_input_window("Bit Plane Slicing"), state='disabled')
 
         self.imageBrighteningMenu.add_command(label="Addition with Scalar", command = lambda: self.scalar_input_window("Addition with Scalar"), state='disabled')
         self.imageBrighteningMenu.add_command(label="Multiplication with Scalar", command = lambda: self.scalar_input_window("Multiplication with Scalar"), state='disabled')
@@ -69,7 +69,7 @@ class App(Frame):
         self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image("Xor with Image"), state='disabled')
         self.editMenu.add_cascade(label="Boolean", menu=self.booleanMenu)
 
-        self.geometryMenu.add_command(label="Translation", command = lambda: self.open_image("Translation"), state='disabled')
+        self.geometryMenu.add_command(label="Translation", command = lambda: self.two_entry_input("Translation"), state='normal')
 
         self.rotationMenu.add_command(label="Rotation 90 Clockwise", command = lambda: self.rotation("Rotation 90 Clockwise"), state='disabled')
         self.rotationMenu.add_command(label="Rotation 90 Counter Clockwise", command =lambda: self.rotation("Rotation 90 Counter Clockwise"), state='disabled')
@@ -286,10 +286,15 @@ class App(Frame):
         self.idHandler(command)
         self.scalarInputWindow = Toplevel(self.parent)
         # sets the title of the Toplevel widget 
-        self.scalarInputWindow.title("Scalar Value") 
+        title = ''
+        if (self.id.get() == 30):
+            title = 'Bit Plane Scalar Value'
+        else:
+            title = 'Scalar Value'
+        self.scalarInputWindow.title(title) 
     
         # sets the geometry of toplevel 
-        self.scalarInputWindow.geometry("200x200")
+        self.scalarInputWindow.geometry("200x100")
         self.scaleLabel = Label(self.scalarInputWindow)
         scale = Scale(self.scalarInputWindow, variable=self.scalarValue, from_=-255, to=255, orient=HORIZONTAL)
         showScaleButton = Button(self.scalarInputWindow, text ="Show Scale", command = self.show)
@@ -307,10 +312,12 @@ class App(Frame):
     def ok(self):
         #panggil fungsi image brightening backend
         id = self.id.get()
-        if (id == 4 or id == 5):
+        withoutCheck = [4, 5, 26, 27, 28, 30]
+        if (id in withoutCheck):
             self.scalarInputWindow.destroy()
-        elif (id == 12):
+        elif (id == 12 or id == 25 or id == 29):
             try:
+                #case kalo contrast stretching ato translation
                 int(self.firstEntry.get())
                 int(self.secondEntry.get())
                 self.twoEntryInputWindow.destroy()
@@ -322,14 +329,26 @@ class App(Frame):
         self.idHandler(command)
         self.twoEntryInputWindow = Toplevel(self.parent)
         # sets the title of the Toplevel widget 
-        self.twoEntryInputWindow.title("X and Y Value") 
-    
+        title = ''
+        textLabel1 = ''
+        textLabel2 = ''
+        
+        if (self.id.get() == 12):
+            title = "X and Y Value"
+            textLabel1 = 'X'
+            textLabel2 = 'Y'
+        elif (self.id.get() == 25 or self.id.get() == 29):
+            textLabel1 = 'rMin'
+            textLabel2 = 'rMax'
+            title = 'rMin and rMax Value'
+        self.twoEntryInputWindow.title(title) 
+
         # sets the geometry of toplevel 
         self.twoEntryInputWindow.geometry("330x170")
 
-        label1 = Label(self.twoEntryInputWindow, text='X').place(x = 30, y = 30)
+        label1 = Label(self.twoEntryInputWindow, text=textLabel1).place(x = 30, y = 30)
         entry1 = Entry(self.twoEntryInputWindow, textvariable=self.firstEntry).place(x = 80, y = 30)
-        label2 = Label(self.twoEntryInputWindow, text='Y').place(x = 30, y = 60)
+        label2 = Label(self.twoEntryInputWindow, text=textLabel2).place(x = 30, y = 60)
         entry2 = Entry(self.twoEntryInputWindow, textvariable=self.secondEntry).place(x = 80, y = 60)
         okButton = Button(self.twoEntryInputWindow, text ="OK", command = self.ok)
         self.feedback = Label(self.twoEntryInputWindow, text='')
