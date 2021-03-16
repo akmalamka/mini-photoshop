@@ -273,7 +273,6 @@ Image Image::negative() {
             }
         }
     }
-
     return new_image;
 }
 

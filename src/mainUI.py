@@ -14,6 +14,7 @@ class App(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.mainPanel = Label(self.parent) # panel yang nampilin gambar
+        #Menu
         self.menubar = Menu(self.parent, tearoff=False)
         self.fileMenu = Menu(self.menubar, tearoff=False)
         self.editMenu = Menu(self.menubar, tearoff=False)
@@ -27,12 +28,21 @@ class App(Frame):
         self.zoomMenu = Menu(self.editMenu, tearoff=False)
         self.showHistogramMenu = Menu(self.histogramMenu, tearoff=False)
         self.showNormalizedHistogramMenu = Menu(self.histogramMenu, tearoff=False)
+
         self.filename = ''
         self.status = 'Initializing'
         self.statusbar = Label(self.parent, text = self.status)
         self.statusbar.pack(side=BOTTOM, fill=X)
-        self.imageArrMain = np.zeros((1,1), dtype=np.uint8) #array image utama hasil dari backend
-        self.imageArrOperation = np.zeros((1,1), dtype=np.uint8) #array image yang akan dioperasikan 
+        # Image
+        self.mainImageObject = image.Image() # object image utama
+        self.operatorImageObject = image.Image() #object image yang dioperasikan
+        self.imageArrMain = np.zeros((1,1), dtype=np.uint8) #array image utama hasil dari backend yang diubah 3D
+        self.imageArrOperator = np.zeros((1,1), dtype=np.uint8) #array image yang akan dioperasikan 
+        self.imageMainType = StringVar()
+        self.imageOperatorType = StringVar()
+        self.grayLevelMain = IntVar()
+        self.grayLevelOperator = IntVar()
+        
         self.scalarValue = DoubleVar()
         self.id = IntVar() #id command yang diberikan
         self.firstEntry = StringVar()
@@ -98,7 +108,58 @@ class App(Frame):
         self.histogramMenu.add_cascade(label="Show Normalized Histogram", menu=self.showNormalizedHistogramMenu)
 
         self.menubar.add_cascade(label="Histogram", menu=self.histogramMenu)
+
+    def save_array_to_backend(self, npArray, width, height, graylevel):
+        imgObject = image.Image(height, width, graylevel)
         
+        for i in range(width):
+            for j in range(height):
+                for k in range(3):
+                    image.set(imgObject.pixels, i, j, k, int(npArray[i][j][k]))
+        return imgObject
+
+    def save_array_to_frontend(self, imgObject):
+        arrTemp = np.zeros((imgObject.height, imgObject.width, 3), dtype='uint8')
+        for i in range(imgObject.height):
+            for j in range(imgObject.width):
+                for k in range(3):
+                    arrTemp[i][j][k] = image.get(imgObject.pixels, i, j, k)
+
+        return arrTemp
+
+    def npArrayHandler(self, command, imgType, npArray):
+        if (command == 'convertTo3D'):
+            if (imgType == 'RGB'):
+                return npArray
+            else:
+                arrTemp = np.zeros((npArray.shape[0], npArray.shape[1], 3), dtype='uint8')
+                if (imgType == 'GRAYSCALE'):
+                    for i in range(npArray.shape[0]):
+                        for j in range(npArray.shape[1]):
+                            arrTemp[i][j][0] = npArray[i][j]
+                            arrTemp[i][j][1] = npArray[i][j]
+                            arrTemp[i][j][2] = npArray[i][j]
+
+                elif (imgType == 'BINARY'):
+                    for i in range(npArray.shape[0]):
+                        for j in range(npArray.shape[1]):
+                            if (npArray[i][j] or npArray[i][j] == 1):
+                                arrTemp[i][j][0] = 1
+                                arrTemp[i][j][1] = 1
+                                arrTemp[i][j][2] = 1
+                            else:
+                                arrTemp[i][j][0] = 0
+                                arrTemp[i][j][1] = 0
+                                arrTemp[i][j][2] = 0
+                return arrTemp
+
+        elif (command == 'convert3DTo2D'):
+            arrTemp = np.zeros((npArray.shape[0], npArray.shape[1]), dtype='uint8')
+            for i in range(npArray.shape[0]):
+                for j in range(npArray.shape[1]):
+                    arrTemp[i][j] = npArray[i][j][0]
+            return arrTemp
+
     def idHandler(self, command):
         switcher = { 
             "Open" : 0,
@@ -144,11 +205,21 @@ class App(Frame):
         return self.filename 
 
     def show_image(self):
-        self.img = ImageTk.PhotoImage(self.rawImg) # photo image class tkinter
+        switcher = {
+            'RGB' : 'RGB',
+            'GRAYSCALE' : 'L',
+            'BINARY' : '1'
+        }
+        mode = switcher.get(self.imageMainType.get(), lambda: 'RGB')
+        if (mode == 'RGB'):
+            self.img = ImageTk.PhotoImage(Image.fromarray(self.imageArrMain, mode)) # photo image class tkinter
+        else:
+            arrTemp = self.npArrayHandler('convert3DTo2D', self.imageMainType.get(), self.imageArrMain)
+            self.img = ImageTk.PhotoImage(Image.fromarray(arrTemp, mode)) # photo image class tkinter
         self.mainPanel = Label(image = self.img)
         self.mainPanel.pack()
-        width, height = self.rawImg.size
-        self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+        # width, height = self.rawImg.size
+        # self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
 
 
     def open_image(self, command):
@@ -156,62 +227,79 @@ class App(Frame):
         # # Select the Imagename from a folder
         x = self.open_filename()
         self.rawImg = Image.open(x) # Image Object PIL
-
+        print('mode')
+        print(self.rawImg.mode)
         if (self.id.get() == 0):
-            #Open Image at the beginning
-            # # Select the Imagename from a folder 
-            # self.npArrImg = np.array(self.rawImg)
-            # self.listImg = self.npArrImg.tolist()
-            # self.imgType = ''
-            # if (self.rawImg.mode == '1'):
-            #     self.imgType = 'BINARY'
-            # elif (self.rawImg.mode == 'L'):
-            #     self.imgType = 'GRAYSCALE'
-            # elif (self.rawImg.mode == 'RGB'):
-            #     self.imgType = "RGB"
-            #IMPORTANT
-            #lempar array ke backend
-            #self.imgObject = ip.makeImage(self.listImg, self.imgType)
-            #simpen array dari backend
-            # self.listImg = ip.getArray()
+            self.imageArrMain = np.array(self.rawImg)
+            if (self.rawImg.mode == 'RGB'):
+                self.imageMainType.set('RGB')
+                self.imageArrMain = self.npArrayHandler('convertTo3D', self.imageMainType.get(), self.imageArrMain)
+            else:
+                if (self.rawImg.mode == 'L'):
+                    self.imageMainType.set('GRAYSCALE')
+                elif (self.rawImg.mode == '1'):
+                    self.imageMainType.set('BINARY')
+                self.imageArrMain = self.npArrayHandler('convertTo3D',self.imageMainType.get(), self.imageArrMain)
+            if (self.imageMainType.get() == 'GRAYSCALE' or self.imageMainType.get() == 'RGB'):
+                self.grayLevelMain.set(256)
+            elif (self.imageMainType.get() == 'BINARY'):
+                self.grayLevelMain.set(2)
 
-            # w, h = 512, 512
-            # imageType = 'RGB'
-            # grayLevel = 255
-            # if (imageType == 'RGB'):
-            #     self.imageArrMain = np.zeros((h, w, 3), dtype=np.uint8)
-            #     self.imageArrMain[0:256, 0:256] = [255, 0, 0] # red patch in upper left
-            #     self.rawImg = Image.fromarray(self.imageArrMain, 'RGB')
-            # elif (imageType == 'GRAYSCALE'):
-            #     if (grayLevel < 255):
-            #         #yang ini belom, kyknya pake matplotlib ajadeh wkkw
-            #         print('aaa')
-            #     else:
-            #         self.imageArrMain = np.zeros((h, w), dtype=np.uint8)
-            #         self.imageArrMain[0:256, 0:256] = [125] # red patch in upper left
-            #         self.rawImg = Image.fromarray(self.imageArrMain, 'P')
-            # elif (imageType == 'BINARY'):
-            #     self.imageArrMain = np.zeros((h, w), dtype=np.uint8)
-            #     self.imageArrMain[0:256, 0:256] = [1] # red patch in upper left
-            #     self.rawImg = Image.fromarray(self.imageArrMain, '1')
-
-            # PhotoImage class is used to add image to widgets, icons etc 
-            # self.img = ImageTk.PhotoImage(self.rawImg) 
-
-            # create a label 
-            # self.panel = Label(self.parent, image = self.img)
-
-            # set the image as img 
-            # self.panel.pack()
-            # width, height = self.rawImg.size
-            # self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
-            # panggil fungsi backend, kasih parameter np.array(self.rawImg)
+            self.mainImageObject = self.save_array_to_backend(self.imageArrMain, self.imageArrMain.shape[0], self.imageArrMain.shape[1], self.grayLevelMain.get())
             self.show_image()
             self.disable_sub_menu('Open')
             
         else:
-            self.imageArrOperation = np.array(self.rawImg)
+            self.imageArrOperator = np.array(self.rawImg)
             #panggil fungsi yang ngelakuin operasi2nya di backend
+            if (self.rawImg.mode == 'RGB'):
+                self.imageOperatorType.set('RGB')
+                self.imageArrOperator = self.npArrayHandler('convertTo3D', self.imageOperatorType.get(), self.imageArrOperator)
+            else:
+                if (self.rawImg.mode == 'L'):
+                    self.imageOperatorType.set('GRAYSCALE')
+                elif (self.rawImg.mode == '1'):
+                    self.imageOperatorType.set('BINARY')
+                self.imageArrOperator = self.npArrayHandler('convertTo3D',self.imageOperatorType.get(), self.imageArrOperator)
+            if (self.imageOperatorType.get() == 'GRAYSCALE' or self.imageOperatorType.get() == 'RGB'):
+                self.grayLevelOperator.set(256)
+            elif (self.imageOperatorType.get() == 'BINARY'):
+                self.grayLevelOperator.set(2)
+
+            self.operatorImageObject = self.save_array_to_backend(self.imageArrOperator, self.imageArrOperator.shape[0], self.imageArrOperator.shape[1], self.grayLevelOperator.get())
+
+            id = self.id.get()
+            if (id == 6): # Addition with Image
+                self.mainImageObject = self.mainImageObject + self.operatorImageObject
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 7): # Subtraction with Image
+                self.mainImageObject = self.mainImageObject - self.operatorImageObject
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 8): # And with Image
+                self.mainImageObject = self.mainImageObject & self.operatorImageObject
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            # elif(id == 9): # Not with Image
+            #     self.mainImageObject = self.mainImageObject ! self.operatorImageObject
+            #     arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            #     self.imageArrMain = arrTemp
+            #     self.show_image()
+            elif (id == 10): # Or with Image
+                self.mainImageObject = self.mainImageObject | self.operatorImageObject
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 11): # Xor with Image
+                self.mainImageObject = self.mainImageObject ^ self.operatorImageObject
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+
         self.enable_sub_menu('Save File')
         self.enable_all_sub_menu()
 
@@ -272,15 +360,24 @@ class App(Frame):
 
     def negative(self, command):
         # ubah image object jadi negative
-        # self.imageObject.negative()
         self.idHandler(command)
-        print('negative')
+        self.mainImageObject = self.mainImageObject.negative()
 
+        arrTemp = self.save_array_to_frontend(self.mainImageObject)
+
+        self.imageArrMain = arrTemp
+        self.show_image()
+        
     def grayscale(self, command):
         # ubah image object jadi grayscale
-        #self.imageObject.grayscale()
         self.idHandler(command)
-        print('grayscale')
+
+        self.mainImageObject = self.mainImageObject.grayscale()
+
+        arrTemp = self.save_array_to_frontend(self.mainImageObject)
+
+        self.imageArrMain = arrTemp
+        self.show_image()
 
     def scalar_input_window(self, command):
         self.idHandler(command)
@@ -294,9 +391,9 @@ class App(Frame):
         self.scalarInputWindow.title(title) 
     
         # sets the geometry of toplevel 
-        self.scalarInputWindow.geometry("200x100")
+        self.scalarInputWindow.geometry("600x100")
         self.scaleLabel = Label(self.scalarInputWindow)
-        scale = Scale(self.scalarInputWindow, variable=self.scalarValue, from_=-255, to=255, orient=HORIZONTAL)
+        scale = Scale(self.scalarInputWindow, variable=self.scalarValue, from_=-255, to=255, orient=HORIZONTAL, length = 500)
         showScaleButton = Button(self.scalarInputWindow, text ="Show Scale", command = self.show)
         okButton = Button(self.scalarInputWindow, text ="OK", command = self.ok)
 
@@ -315,12 +412,57 @@ class App(Frame):
         withoutCheck = [4, 5, 26, 27, 28, 30]
         if (id in withoutCheck):
             self.scalarInputWindow.destroy()
+            if (id == 4): #Addition with Scalar
+                self.mainImageObject = self.mainImageObject + int(self.scalarValue.get())
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 5): # Multiplication with Scalar
+                self.mainImageObject = self.mainImageObject * int(self.scalarValue.get())
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 26): # Log Transformation
+                self.mainImageObject = self.mainImageObject.logTransform(self.scalarValue.get())
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 27): # Inverse Log Transformation
+                self.mainImageObject = self.mainImageObject.inverseLogTransform(self.scalarValue.get())
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 28): # Power Transformation
+                self.mainImageObject = self.mainImageObject.powerTransform(self.scalarValue.get())
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+            elif (id == 30):
+                self.mainImageObject = self.mainImageObject.bitPlaneSlice(int(self.scalarValue.get()))
+                arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                self.imageArrMain = arrTemp
+                self.show_image()
+
         elif (id == 12 or id == 25 or id == 29):
             try:
-                #case kalo contrast stretching ato translation
                 int(self.firstEntry.get())
                 int(self.secondEntry.get())
                 self.twoEntryInputWindow.destroy()
+                if (id == 12): # Translation
+                    self.mainImageObject = self.mainImageObject.translate(int(self.firstEntry.get()), int(self.secondEntry.get()))
+                    arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                    self.imageArrMain = arrTemp
+                    self.show_image()
+                elif (id == 25): # Contrast Stretching
+                    self.mainImageObject = self.mainImageObject.contrastStrech(int(self.firstEntry.get()), int(self.secondEntry.get()))
+                    arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                    self.imageArrMain = arrTemp
+                    self.show_image()
+                elif (id == 29): # Gray Level Slicing
+                    self.mainImageObject = self.mainImageObject.grayLevelSlice(int(self.firstEntry.get()), int(self.secondEntry.get()))
+                    arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                    self.imageArrMain = arrTemp
+                    self.show_image()
             except ValueError:
                 self.feedback.config(text='Masukan hanya bisa integer, silakan coba lagi')
             
@@ -358,17 +500,34 @@ class App(Frame):
 
     def rotation(self, command):
         # rotate image object sesuai command
-        #self.imageObject.grayscale()
         self.idHandler(command)
-        #conditional kalo 90 cw dan ccw
-        print('rotation')
+        id = self.id.get()
+        if (id == 13):
+            self.mainImageObject = self.mainImageObject.rotate(True)
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
+        elif (id == 14):
+            self.mainImageObject = self.mainImageObject.rotate(False)
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
+
 
     def flip(self, command):
         # flip image object sesuai command
-        #self.imageObject.grayscale()
         self.idHandler(command)
-        #conditional kalo flip vertical atau horizontal
-        print('flip') 
+        id = self.id.get()
+        if (id == 15):
+            self.mainImageObject = self.mainImageObject.flip(True)
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
+        elif (id == 16):
+            self.mainImageObject = self.mainImageObject.flip(False)
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
 
     def show_histogram(self, command, color):
         self.idHandler(command)

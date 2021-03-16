@@ -28,14 +28,25 @@ def npArrayHandler(imgType, npArray):
         arrTemp = np.zeros((npArray.shape[0], npArray.shape[1], 3), dtype='uint8')
         for i in range(npArray.shape[0]):
             for j in range(npArray.shape[1]):
-                arrTemp[i][j][0] = npArray[i][j]
+                if (npArray[i][j]):
+                    arrTemp[i][j][0] = 1
+                    arrTemp[i][j][1] = 1
+                    arrTemp[i][j][2] = 1
+                else:
+                    arrTemp[i][j][0] = 0
+                    arrTemp[i][j][1] = 0
+                    arrTemp[i][j][2] = 0
+
         return arrTemp
 
 # file PBM dan BMP Biner
 print('abc pbm')
-rawImg = Image.open('../img/abc.pbm')
+rawImg = Image.open('../img//test/abc.pbm')
 nparr = np.array(rawImg)
 nparr = npArrayHandler('BINARY', nparr)
+# print(nparr) 
+# print('ccc')
+# print(nparr)
 imgObject = save_array_to_backend(nparr, nparr.shape[0], nparr.shape[1], 256, 3)
 
 print(image.get(imgObject.pixels, 1, 2, 0))
@@ -51,15 +62,17 @@ print(arrNow[1][2][0])
 
 # file PGM dan BMP Grayscale dan RAW
 print('abc')
-rawImg = Image.open('../img/abc.pgm')
+rawImg = Image.open('../img/test/abc.pgm')
 nparr = np.array(rawImg)
+# print(nparr)
 nparr = npArrayHandler('GRAYSCALE', nparr)
+print('ccc')
+# print(nparr)
 imgObject = save_array_to_backend(nparr, nparr.shape[0], nparr.shape[1], 256, 3)
-
 print(image.get(imgObject.pixels, 1, 2, 0))
 
-now = imgObject.negative()
-# now = imgObject + 10 gabisaa
+# now = imgObject.negative()
+now = imgObject + 10
 
 print(image.get(now.pixels, 1, 2, 0))
 
@@ -68,7 +81,7 @@ arrNow = save_array_to_frontend(now)
 print(arrNow[1][2][0])
 
 print('zelda')
-rawImg = Image.open('../img/zelda.bmp')
+rawImg = Image.open('../img//test/zelda.bmp')
 nparr = np.array(rawImg)
 nparr = npArrayHandler('GRAYSCALE', nparr)
 imgObject = save_array_to_backend(nparr, nparr.shape[0], nparr.shape[1], 256, 3)
@@ -103,23 +116,25 @@ print('raw gabisaaa wkwk')
 
 # # file PPM dan BMP RGB
 print('lena')
-rawImg = Image.open('../img/lena.bmp')
+rawImg = Image.open('../img//test/lena.bmp')
+print(rawImg.mode == 'RGB')
 nparr = np.array(rawImg)
+print(len(nparr.shape))
 # print(nparr.shape)
 imgObject = save_array_to_backend(nparr, nparr.shape[0], nparr.shape[1], 256, 3)
 
-print(image.get(imgObject.pixels, 1, 2, 2))
+print(image.get(imgObject.pixels, 1, 1, 0))
 
 now = imgObject + 10
 
-print(image.get(now.pixels, 1, 2, 2))
+print(image.get(now.pixels, 1, 1, 0))
 
 arrNow = save_array_to_frontend(now)
 
-print(arrNow[1][2][2])
+print(arrNow[1][1][0])
 
 print('baboon')
-rawImg = Image.open('../img/baboon24.ppm')
+rawImg = Image.open('../img/test/baboon24.ppm')
 nparr = np.array(rawImg)
 imgObject = save_array_to_backend(nparr, nparr.shape[0], nparr.shape[1], 256, 3)
 
