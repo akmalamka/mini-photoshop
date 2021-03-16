@@ -266,7 +266,6 @@ Image Image::transpose() {
 
 Image Image::negative() {
     Image new_image(this->width, this->height, this->grayLevel);
-
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
