@@ -62,23 +62,11 @@ class _SwigNonDynamicMeta(type):
 
 
 
-def new_mat(width, height):
-    return _image.new_mat(width, height)
-
-def mat(arr, width, height):
-    return _image.mat(arr, width, height)
-
-def freeAll(arr, width, height):
-    return _image.freeAll(arr, width, height)
-
-def free(arr, width, height):
-    return _image.free(arr, width, height)
-
-def get(arr, i, j, k):
-    return _image.get(arr, i, j, k)
-
 def set(arr, i, j, k, value):
     return _image.set(arr, i, j, k, value)
+
+def get(*args):
+    return _image.get(*args)
 class Image(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -101,6 +89,21 @@ class Image(object):
 
     def getPixels(self):
         return _image.Image_getPixels(self)
+
+    def getMean(self, channel):
+        return _image.Image_getMean(self, channel)
+
+    def getVariance(self, channel):
+        return _image.Image_getVariance(self, channel)
+
+    def getStandardDeviation(self, channel):
+        return _image.Image_getStandardDeviation(self, channel)
+
+    def getNormalizedDistribution(self, channel):
+        return _image.Image_getNormalizedDistribution(self, channel)
+
+    def getNormalizedDistributions(self):
+        return _image.Image_getNormalizedDistributions(self)
 
     def __sub__(self, image):
         return _image.Image___sub__(self, image)

@@ -124,6 +124,24 @@ class App(Frame):
                     image.set(imgObject.getPixels(), i, j, k, int(npArray[i][j][k]))
         return imgObject
 
+    def save_histogram_normalized_to_frontend(self, histogramArr):
+        graylevel = self.mainImageObject.getGrayLevel()
+        arrTemp = np.zeros((3, graylevel), dtype='double')
+        for i in range(3):
+            for j in range(graylevel):
+                arrTemp[i][j] = image.get(histogramArr, i, j)
+
+        return arrTemp
+
+    def save_histogram_to_frontend(self, histogramArr):
+        graylevel = self.mainImageObject.getGrayLevel()
+        arrTemp = np.zeros((3, graylevel), dtype='uint8')
+        for i in range(3):
+            for j in range(graylevel):
+                arrTemp[i][j] = image.get(histogramArr, i, j)
+
+        return arrTemp
+
     def save_array_to_frontend(self, imgObject):
         arrTemp = np.zeros((imgObject.getHeight(), imgObject.getWidth(), 3), dtype='uint8')
         for i in range(imgObject.getHeight()):
@@ -229,7 +247,6 @@ class App(Frame):
         width = self.mainImageObject.getWidth()
         height = self.mainImageObject.getHeight()
         self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + self.format.get() + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
-
 
     def open_image(self, command):
         self.idHandler(command)
@@ -544,12 +561,57 @@ class App(Frame):
 
     def show_histogram(self, command, color):
         self.idHandler(command)
-        a=np.array([1,2,3,4,4,4,2,1,1,1,1, 256, 135])
-        plt.title('Histogram')
-        plt.xlabel('Value')
-        plt.ylabel('Pixel Frequency')
-        plt.hist(a, bins = 256, range=[0, 256], color=color)
-        plt.show()
+        id = self.id.get()
+        histogramOrdinary = [19, 20, 21]
+        if (id in histogramOrdinary):
+            histogram = self.mainImageObject.getDistributions()
+            histogramNpArr = self.save_histogram_to_frontend(histogram)
+            if (id == 19): # Show Histogram Red
+                red = histogramNpArr[0]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+            elif (id == 20): # Show Histogram Green
+                green = histogramNpArr[1]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(green, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+            elif (id == 21): # Show Histogram Blue
+                blue = histogramNpArr[2]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(blue, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+        else:
+            histogram = self.mainImageObject.getNormalizedDistributions()
+            histogramNpArr = self.save_histogram_normalized_to_frontend(histogram)
+            if (id == 22): # Show Histogram Red
+                red = histogramNpArr[0]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+            elif (id == 23): # Show Histogram Green
+                green = histogramNpArr[1]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(green, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+            elif (id == 24): # Show Histogram Blue
+                blue = histogramNpArr[2]
+                plt.title('Histogram')
+                plt.xlabel('Value')
+                plt.ylabel('Pixel Frequency')
+                plt.hist(blue, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.show()
+        
     
     def histogram_equalization(self, command):
         self.idHandler(command)

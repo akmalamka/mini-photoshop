@@ -73,7 +73,7 @@ class Image {
         Image bitPlaneSlice(int n);
 
         Image equalize();
-        Image specifize(const Image& image);
+        // Image specifize(const Image& image);
 };
 
 #endif
