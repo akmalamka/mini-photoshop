@@ -294,6 +294,7 @@ Image Image::transpose() {
 
 Image Image::negative() {
     Image new_image(this->width, this->height, this->grayLevel);
+
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
@@ -301,6 +302,7 @@ Image Image::negative() {
             }
         }
     }
+
     return new_image;
 }
 
@@ -309,7 +311,7 @@ Image Image::grayscale() {
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            int new_pixel = (int) round(0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0724 * this->pixels[i][j][3]);
+            int new_pixel = (int) round(0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0724 * this->pixels[i][j][2]);
             for (int k = 0; k < 3; k++) {
                 new_image.pixels[i][j][k] = clip(new_pixel, new_image.grayLevel);
             }

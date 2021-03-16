@@ -42,6 +42,9 @@ class App(Frame):
         self.imageOperatorType = StringVar()
         self.grayLevelMain = IntVar()
         self.grayLevelOperator = IntVar()
+        self.mode = StringVar()
+        self.format = StringVar()
+        self.zoomStack = []
         
         self.scalarValue = DoubleVar()
         self.id = IntVar() #id command yang diberikan
@@ -74,7 +77,7 @@ class App(Frame):
         self.editMenu.add_cascade(label="Arithmetics", menu=self.arithmeticsMenu)
 
         self.booleanMenu.add_command(label="And with Image", command = lambda: self.open_image("And with Image"), state='disabled')
-        self.booleanMenu.add_command(label="Not with Image", command =lambda: self.open_image("Not with Image"), state='disabled')
+        self.booleanMenu.add_command(label="Not", command =lambda: self.negative("Not"), state='disabled')
         self.booleanMenu.add_command(label="Or with Image", command = lambda: self.open_image("Or with Image"), state='disabled')
         self.booleanMenu.add_command(label="Xor with Image", command =lambda: self.open_image("Xor with Image"), state='disabled')
         self.editMenu.add_cascade(label="Boolean", menu=self.booleanMenu)
@@ -89,8 +92,8 @@ class App(Frame):
         self.flipMenu.add_command(label="Flip Horizontal", command =lambda: self.flip("Flip Horizontal"), state='disabled')
         self.geometryMenu.add_cascade(label="Flip", menu=self.flipMenu)
 
-        self.zoomMenu.add_command(label="Zoom In", command = lambda: self.open_image("Zoom In"), state='disabled')
-        self.zoomMenu.add_command(label="Zoom Out", command =lambda: self.open_image("Zoom Out"), state='disabled')
+        self.zoomMenu.add_command(label="Zoom In", command = lambda: self.zoom("Zoom In"), state='disabled')
+        self.zoomMenu.add_command(label="Zoom Out", command =lambda: self.zoom("Zoom Out"), state='disabled')
         self.geometryMenu.add_cascade(label="Zoom", menu=self.zoomMenu)
 
         self.editMenu.add_cascade(label="Geometry", menu=self.geometryMenu)
@@ -107,6 +110,9 @@ class App(Frame):
         self.showNormalizedHistogramMenu.add_command(label="Blue", command =lambda: self.show_histogram("Show Normalized Histogram Blue", 'blue'), state='disabled')
         self.histogramMenu.add_cascade(label="Show Normalized Histogram", menu=self.showNormalizedHistogramMenu)
 
+        self.histogramMenu.add_command(label="Histogram Equalization", command =lambda: self.histogram_equalization("Histogram Equalization"), state='disabled')
+        self.histogramMenu.add_command(label="Histogram Specification", command =lambda: self.show_histogram("Show Histogram Blue", 'blue'), state='disabled')
+
         self.menubar.add_cascade(label="Histogram", menu=self.histogramMenu)
 
     def save_array_to_backend(self, npArray, width, height, graylevel):
@@ -115,15 +121,15 @@ class App(Frame):
         for i in range(width):
             for j in range(height):
                 for k in range(3):
-                    image.set(imgObject.pixels, i, j, k, int(npArray[i][j][k]))
+                    image.set(imgObject.getPixels(), i, j, k, int(npArray[i][j][k]))
         return imgObject
 
     def save_array_to_frontend(self, imgObject):
-        arrTemp = np.zeros((imgObject.height, imgObject.width, 3), dtype='uint8')
-        for i in range(imgObject.height):
-            for j in range(imgObject.width):
+        arrTemp = np.zeros((imgObject.getHeight(), imgObject.getWidth(), 3), dtype='uint8')
+        for i in range(imgObject.getHeight()):
+            for j in range(imgObject.getWidth()):
                 for k in range(3):
-                    arrTemp[i][j][k] = image.get(imgObject.pixels, i, j, k)
+                    arrTemp[i][j][k] = image.get(imgObject.getPixels(), i, j, k)
 
         return arrTemp
 
@@ -171,7 +177,7 @@ class App(Frame):
             "Addition with Image" : 6,
             "Subtraction with Image" : 7,
             "And with Image": 8,
-            "Not with Image" : 9,
+            "Not" : 9,
             "Or with Image" : 10,
             "Xor with Image" : 11,
             "Translation" : 12,
@@ -192,7 +198,9 @@ class App(Frame):
             "Inverse Log Transformation": 27,
             "Power Transformation": 28,
             "Gray Level Slicing": 29,
-            "Bit Plane Slicing": 30
+            "Bit Plane Slicing": 30,
+            "Histogram Equalization": 31,
+            "Histogram Specification": 32
         } 
 
         idTemp = switcher.get(command, lambda: -1)
@@ -210,16 +218,17 @@ class App(Frame):
             'GRAYSCALE' : 'L',
             'BINARY' : '1'
         }
-        mode = switcher.get(self.imageMainType.get(), lambda: 'RGB')
-        if (mode == 'RGB'):
-            self.img = ImageTk.PhotoImage(Image.fromarray(self.imageArrMain, mode)) # photo image class tkinter
+        self.mode.set(switcher.get(self.imageMainType.get(), lambda: 'RGB'))
+        if (self.mode.get() == 'RGB'):
+            self.img = ImageTk.PhotoImage(Image.fromarray(self.imageArrMain, self.mode.get())) # photo image class tkinter
         else:
             arrTemp = self.npArrayHandler('convert3DTo2D', self.imageMainType.get(), self.imageArrMain)
-            self.img = ImageTk.PhotoImage(Image.fromarray(arrTemp, mode)) # photo image class tkinter
+            self.img = ImageTk.PhotoImage(Image.fromarray(arrTemp, self.mode.get())) # photo image class tkinter
         self.mainPanel = Label(image = self.img)
         self.mainPanel.pack()
-        # width, height = self.rawImg.size
-        # self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + str(self.rawImg.format) + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
+        width = self.mainImageObject.getWidth()
+        height = self.mainImageObject.getHeight()
+        self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + self.format.get() + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
 
 
     def open_image(self, command):
@@ -227,8 +236,7 @@ class App(Frame):
         # # Select the Imagename from a folder
         x = self.open_filename()
         self.rawImg = Image.open(x) # Image Object PIL
-        print('mode')
-        print(self.rawImg.mode)
+        self.format.set(self.rawImg.format)
         if (self.id.get() == 0):
             self.imageArrMain = np.array(self.rawImg)
             if (self.rawImg.mode == 'RGB'):
@@ -251,7 +259,6 @@ class App(Frame):
             
         else:
             self.imageArrOperator = np.array(self.rawImg)
-            #panggil fungsi yang ngelakuin operasi2nya di backend
             if (self.rawImg.mode == 'RGB'):
                 self.imageOperatorType.set('RGB')
                 self.imageArrOperator = self.npArrayHandler('convertTo3D', self.imageOperatorType.get(), self.imageArrOperator)
@@ -284,11 +291,6 @@ class App(Frame):
                 arrTemp = self.save_array_to_frontend(self.mainImageObject)
                 self.imageArrMain = arrTemp
                 self.show_image()
-            # elif(id == 9): # Not with Image
-            #     self.mainImageObject = self.mainImageObject ! self.operatorImageObject
-            #     arrTemp = self.save_array_to_frontend(self.mainImageObject)
-            #     self.imageArrMain = arrTemp
-            #     self.show_image()
             elif (id == 10): # Or with Image
                 self.mainImageObject = self.mainImageObject | self.operatorImageObject
                 arrTemp = self.save_array_to_frontend(self.mainImageObject)
@@ -313,11 +315,7 @@ class App(Frame):
         file = asksaveasfilename( filetypes = files, defaultextension = files)
         if file is None:
             return None
-        #IMPORTANT
-        # ubah array dari backend ke numpy
-        # self.npArrImg = np.array(self.listImg)
-        # ubah numpy array ke image sesuai sama modenya rawImg
-        # self.rawImg = Image.fromarray(self.npArrImg, self.rawImg.mode), kalo gabisa pake mode, pake imgType
+        self.rawImg = Image.fromarray(self.imageArrMain, self.mode.get())
 
         self.rawImg.save(file)
 
@@ -335,7 +333,7 @@ class App(Frame):
         self.arithmeticsMenu.entryconfig("Addition with Image", state='normal')
         self.arithmeticsMenu.entryconfig("Subtraction with Image", state='normal')
         self.booleanMenu.entryconfig("And with Image", state='normal')
-        self.booleanMenu.entryconfig("Not with Image", state='normal')
+        self.booleanMenu.entryconfig("Not", state='normal')
         self.booleanMenu.entryconfig("Or with Image", state='normal')
         self.booleanMenu.entryconfig("Xor with Image", state='normal')
         self.geometryMenu.entryconfig("Translation", state='normal')
@@ -357,6 +355,8 @@ class App(Frame):
         self.editMenu.entryconfig("Power Transformation", state='normal')
         self.editMenu.entryconfig("Gray Level Slicing", state='normal')
         self.editMenu.entryconfig("Bit Plane Slicing", state='normal')
+        self.histogramMenu.entryconfig("Histogram Equalization", state='normal')
+        self.histogramMenu.entryconfig("Histogram Specification", state='normal')
 
     def negative(self, command):
         # ubah image object jadi negative
@@ -466,7 +466,6 @@ class App(Frame):
             except ValueError:
                 self.feedback.config(text='Masukan hanya bisa integer, silakan coba lagi')
             
-
     def two_entry_input(self, command):
         self.idHandler(command)
         self.twoEntryInputWindow = Toplevel(self.parent)
@@ -513,7 +512,6 @@ class App(Frame):
             self.imageArrMain = arrTemp
             self.show_image()
 
-
     def flip(self, command):
         # flip image object sesuai command
         self.idHandler(command)
@@ -529,6 +527,21 @@ class App(Frame):
             self.imageArrMain = arrTemp
             self.show_image()
 
+    def zoom(self, command):
+        self.idHandler(command)
+        id = self.id.get()
+        if (id == 17): # Zoom In
+            self.zoomStack.append(self.mainImageObject)
+            self.mainImageObject = self.mainImageObject.zoom()
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
+        elif (id == 18): # Zoom Out
+            self.mainImageObject = self.zoomStack.pop()
+            arrTemp = self.save_array_to_frontend(self.mainImageObject)
+            self.imageArrMain = arrTemp
+            self.show_image()
+
     def show_histogram(self, command, color):
         self.idHandler(command)
         a=np.array([1,2,3,4,4,4,2,1,1,1,1, 256, 135])
@@ -538,6 +551,12 @@ class App(Frame):
         plt.hist(a, bins = 256, range=[0, 256], color=color)
         plt.show()
     
+    def histogram_equalization(self, command):
+        self.idHandler(command)
+        self.mainImageObject = self.mainImageObject.equalize()
+        arrTemp = self.save_array_to_frontend(self.mainImageObject)
+        self.imageArrMain = arrTemp
+        self.show_image()
 
 def main():
     root = Tk()

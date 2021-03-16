@@ -82,14 +82,25 @@ def set(arr, i, j, k, value):
 class Image(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-    width = property(_image.Image_width_get, _image.Image_width_set)
-    height = property(_image.Image_height_get, _image.Image_height_set)
-    grayLevel = property(_image.Image_grayLevel_get, _image.Image_grayLevel_set)
-    pixels = property(_image.Image_pixels_get, _image.Image_pixels_set)
 
     def __init__(self, *args):
         _image.Image_swiginit(self, _image.new_Image(*args))
     __swig_destroy__ = _image.delete_Image
+
+    def getWidth(self):
+        return _image.Image_getWidth(self)
+
+    def getHeight(self):
+        return _image.Image_getHeight(self)
+
+    def getGrayLevel(self):
+        return _image.Image_getGrayLevel(self)
+
+    def getDistributions(self):
+        return _image.Image_getDistributions(self)
+
+    def getPixels(self):
+        return _image.Image_getPixels(self)
 
     def __sub__(self, image):
         return _image.Image___sub__(self, image)
@@ -121,8 +132,8 @@ class Image(object):
     def rotate(self, isClockwise):
         return _image.Image_rotate(self, isClockwise)
 
-    def flip(self, isVertical):
-        return _image.Image_flip(self, isVertical)
+    def flip(self, isHorizontal):
+        return _image.Image_flip(self, isHorizontal)
 
     def zoom(self):
         return _image.Image_zoom(self)
@@ -144,6 +155,9 @@ class Image(object):
 
     def bitPlaneSlice(self, n):
         return _image.Image_bitPlaneSlice(self, n)
+
+    def equalize(self):
+        return _image.Image_equalize(self)
 
 # Register Image in _image:
 _image.Image_swigregister(Image)
