@@ -9,11 +9,22 @@ int clip(int value, int grayLevel) {
   return value;
 }
 
-Image::Image() {
-    this->width = 8;
-    this->height = 8;
-    this->grayLevel = 8;
+void Image::_distributions() {
+    this->distributions = (int**) malloc(3 * sizeof(int*));
+    for (int i = 0; i < 3; i++) {
+        this->distributions[i] = (int*) malloc(this->grayLevel * sizeof(int));
+        for (int j = 0; j < this->grayLevel; j++) {
+            this->distributions[i][j] = 0;
+        }
+    }
+}
 
+void Image::_distributions(int** distributions) {
+    this->_distributions();
+    this->__distributions(distributions);
+}
+
+void Image::_pixels() {
     this->pixels = (int***) malloc(this->height * sizeof(int**));
     for (int i = 0; i < height; i++) {
         this->pixels[i] = (int**) malloc(this->width * sizeof(int*));
@@ -26,50 +37,22 @@ Image::Image() {
     }
 }
 
-Image::Image(int width, int height, int grayLevel) {
-    this->width = width;
-    this->height = height;
-    this->grayLevel = grayLevel;
+void Image::_pixels(int*** pixels) {
+    this->_pixels();
+    this->__pixels(pixels);
+}
 
-    this->pixels = (int***) malloc(height * sizeof(int**));
-    for (int i = 0; i < height; i++) {
-        this->pixels[i] = (int**) malloc(width * sizeof(int*));
-        for (int j = 0; j < width; j++) {
-            this->pixels[i][j] = (int*) malloc(3 * sizeof(int));
-            for (int k = 0; k < 3; k++) {
-                this->pixels[i][j][k] = 0;
-            }
+void Image::__distributions(int** distributions) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < this->grayLevel; j++) {
+            this->distributions[i][j] = distributions[i][j];
         }
     }
 }
 
-Image::Image(int width, int height, int grayLevel, int** pixels) {
-    this->width = width;
-    this->height = height;
-    this->grayLevel = grayLevel;
-
-    this->pixels = (int***) malloc(height * sizeof(int**));
+void Image::__pixels(int*** pixels) {
     for (int i = 0; i < height; i++) {
-        this->pixels[i] = (int**) malloc(width * sizeof(int*));
         for (int j = 0; j < width; j++) {
-            this->pixels[i][j] = (int*) malloc(3 * sizeof(int));
-            for (int k = 0; k < 3; k++) {
-                this->pixels[i][j][k] = pixels[i][j];
-            }
-        }
-    }
-}
-
-Image::Image(int width, int height, int grayLevel, int*** pixels) {
-    this->width = width;
-    this->height = height;
-    this->grayLevel = grayLevel;
-
-    this->pixels = (int***) malloc(height * sizeof(int**));
-    for (int i = 0; i < height; i++) {
-        this->pixels[i] = (int**) malloc(width * sizeof(int*));
-        for (int j = 0; j < width; j++) {
-            this->pixels[i][j] = (int*) malloc(3 * sizeof(int));
             for (int k = 0; k < 3; k++) {
                 this->pixels[i][j][k] = pixels[i][j][k];
             }
@@ -77,21 +60,40 @@ Image::Image(int width, int height, int grayLevel, int*** pixels) {
     }
 }
 
+Image::Image() {
+    this->width = 8;
+    this->height = 8;
+    this->grayLevel = 8;
+
+    this->_distributions();
+    this->_pixels();
+}
+
+Image::Image(int width, int height, int grayLevel) {
+    this->width = width;
+    this->height = height;
+    this->grayLevel = grayLevel;
+
+    this->_distributions();
+    this->_pixels();
+}
+
+Image::Image(int width, int height, int grayLevel, int*** pixels) {
+    this->width = width;
+    this->height = height;
+    this->grayLevel = grayLevel;
+
+    this->_distributions();
+    this->_pixels(pixels);
+}
+
 Image::Image(const Image& image) {
     this->width = image.width;
     this->height = image.height;
     this->grayLevel = image.grayLevel;
 
-    this->pixels = (int***) malloc(height * sizeof(int**));
-    for (int i = 0; i < height; i++) {
-        this->pixels[i] = (int**) malloc(width * sizeof(int*));
-        for (int j = 0; j < width; j++) {
-            this->pixels[i][j] = (int*) malloc(3 * sizeof(int));
-            for (int k = 0; k < 3; k++) {
-                this->pixels[i][j][k] = image.pixels[i][j][k];
-            }
-        }
-    }
+    this->_distributions(image.distributions);
+    this->_pixels(image.pixels);
 }
 
 Image::~Image() {
@@ -102,6 +104,40 @@ Image::~Image() {
         free(this->pixels[i]);
     }
     free(this->pixels);
+
+    for (int i = 0; i < 3; i++) {
+        free(this->distributions[i]);
+    }
+    free(this->distributions);
+}
+
+int Image::getWidth() {
+    return this->width;
+}
+
+int Image::getHeight() {
+    return this->height;
+}
+
+int Image::getGrayLevel() {
+    return this->grayLevel;
+}
+
+int** Image::getDistributions() {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < this->grayLevel; j++) this->distributions[i][j] = 0;
+        for (int j = 0; j < this->height; j++) {
+            for (int k = 0; k < this->width; k++) {
+                this->distributions[i][this->pixels[j][k][i]]++;
+            }
+        }
+    }
+
+    return this->distributions;
+}
+
+int*** Image::getPixels() {
+    return this->pixels;
 }
 
 Image& Image::operator=(const Image& image) {
@@ -109,16 +145,8 @@ Image& Image::operator=(const Image& image) {
     this->height = image.height;
     this->grayLevel = image.grayLevel;
 
-    this->pixels = (int***) malloc(height * sizeof(int**));
-    for (int i = 0; i < height; i++) {
-        this->pixels[i] = (int**) malloc(width * sizeof(int*));
-        for (int j = 0; j < width; j++) {
-            this->pixels[i][j] = (int*) malloc(3 * sizeof(int));
-            for (int k = 0; k < 3; k++) {
-                this->pixels[i][j][k] = image.pixels[i][j][k];
-            }
-        }
-    }
+    this->_distributions(image.distributions);
+    this->_pixels(image.pixels);
 
     return (*this);
 }
@@ -160,8 +188,8 @@ Image Image::operator-(const Image& image) {
 Image Image::operator+(int scalar) {
     Image new_image(this->width, this->height, this->grayLevel);
 
-    for (int i = 0; i < this->width; i++) {
-        for (int j = 0; j < this->height; j++) {
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
                 new_image.pixels[i][j][k] = clip(this->pixels[i][j][k] + scalar, new_image.grayLevel);
             }
@@ -174,8 +202,8 @@ Image Image::operator+(int scalar) {
 Image Image::operator*(int scalar) {
     Image new_image(this->width, this->height, this->grayLevel);
 
-    for (int i = 0; i < this->width; i++) {
-        for (int j = 0; j < this->height; j++) {
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
                 new_image.pixels[i][j][k] = clip(this->pixels[i][j][k] * scalar, new_image.grayLevel);
             }
@@ -283,7 +311,7 @@ Image Image::grayscale() {
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            int new_pixel = (int) (0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0722 * this->pixels[i][j][3]);
+            int new_pixel = (int) round(0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0724 * this->pixels[i][j][3]);
             for (int k = 0; k < 3; k++) {
                 new_image.pixels[i][j][k] = clip(new_pixel, new_image.grayLevel);
             }
@@ -311,13 +339,13 @@ Image Image::rotate(bool isClockwise) {
     return (*this).transpose().flip(isClockwise);
 }
 
-Image Image::flip(bool isVertical) {
+Image Image::flip(bool isHorizontal) {
     Image new_image(this->width, this->height, this->grayLevel);
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
-                new_image.pixels[i][j][k] = (isVertical) ? this->pixels[i][(this->width - 1) - j][k] : this->pixels[(this->height - 1) - i][j][k];
+                new_image.pixels[i][j][k] = (isHorizontal) ? this->pixels[i][(this->width - 1) - j][k] : this->pixels[(this->height - 1) - i][j][k];
             }
         }
     }
@@ -427,43 +455,18 @@ Image Image::bitPlaneSlice(int n) {
     return new_image;
 }
 
-// int* Image::distribution() {
-//     return this->distribution(0);
-// }
+Image Image::equalize() {
+    Image new_image(this->width, this->height, this->grayLevel);
 
-// int* Image::distribution(int channel) {
+    int dimension = this->width * this->height;
+    int** distributions = this->getDistributions();
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
+            for (int k = 0; k < 3; k++) {
+                new_image.pixels[i][j][k] = clip((int) distributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1) / dimension, this->grayLevel);
+            }
+        }
+    }
 
-//     for (int i = 0; i < this->grayLevel; i++) this->distributions[channel][i] = 0;
-
-//     for (int i = 0; i < this->height; i++) {
-//         for (int j = 0; j < this->width; j++) {
-//             this->distributions[channel][this->pixels[i][j][channel]]++;
-//         }
-//     }
-
-//     return this->distributions[channel];
-// }
-
-// int** Image::distributions() {
-//     for (int i = 0; i < 3; i++) {
-        
-//     }
-
-//     return this->distributions;
-// }
-
-// int** Image::channel() {
-//     return this->channel(0);
-// }
-
-// int** Image::channel(int channel) {
-//     c = (int**) malloc(this->height * sizeof(int*));
-//     for (int i = 0; i < this->height; i++) {
-//         c[i] = (int*) malloc(this->width * sizeof(int));
-//         for (int j = 0; j < this->width; j++) {
-//             c[i][j] = this->pixels[i][j][channel];
-//         }
-//     }
-
-//     return c;
-// }
+    return new_image;
+}
