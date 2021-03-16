@@ -10,12 +10,14 @@ class Image {
         int** distributions;
         int*** pixels;
 
+        double** normalizedDistributions;
+
         void _distributions();
-        void _distributions(int** distributions);
+        void _distributions(int** distributions, double** normalizedDistributions);
         void _pixels();
         void _pixels(int*** pixels);
 
-        void __distributions(int** distributions);
+        void __distributions(int** distributions, double** normalizedDistributions);
         void __pixels(int*** pixels);
 
         Image transpose();
@@ -36,6 +38,13 @@ class Image {
         int** getDistributions();
         int*** getPixels();
 
+        double getMean(int channel);
+        double getVariance(int channel);
+        double getStandardDeviation(int channel);
+
+        double* getNormalizedDistribution(int channel);
+        double** getNormalizedDistributions();
+
         Image& operator=(const Image& image);
 
         Image operator+(const Image& image);
@@ -47,7 +56,7 @@ class Image {
         Image operator&(const Image& image);
         Image operator|(const Image& image);
         Image operator^(const Image& image);
-        Image operator!(void);
+        // Image operator!(void);
 
         Image negative();
         Image grayscale();
@@ -64,6 +73,7 @@ class Image {
         Image bitPlaneSlice(int n);
 
         Image equalize();
+        Image specifize(const Image& image);
 };
 
 #endif
