@@ -137,6 +137,10 @@ int Image::getGrayLevel() {
     return this->grayLevel;
 }
 
+int* Image::getDistributions(int channel) {
+    return this->getDistributions()[channel];
+}
+
 int** Image::getDistributions() {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < this->grayLevel; j++) this->distributions[i][j] = 0;
@@ -518,21 +522,21 @@ Image Image::equalize() {
     Image new_image(this->width, this->height, this->grayLevel);
 
     int dimension = this->width * this->height;
-    int** distributions = this->getDistributions();
+    double** normalizedDistributions = this->getNormalizedDistributions();
 
-    int sigmaDistributions[3][this->grayLevel];
+    double sigmaNormalizedDistributions[3][this->grayLevel];
     for (int i = 0; i < 3; i++) {
-        int sigma = 0;
+        double sigma = 0;
         for (int j = 0; j < this->grayLevel; j++) {
-            sigma += distributions[i][j];
-            sigmaDistributions[i][j] = sigma;
+            sigma += normalizedDistributions[i][j];
+            sigmaNormalizedDistributions[i][j] = sigma;
         }
     }
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
-                new_image.pixels[i][j][k] = clip((int) sigmaDistributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1) / dimension, this->grayLevel);
+                new_image.pixels[i][j][k] = clip((int) round(sigmaNormalizedDistributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1)), this->grayLevel);
             }
         }
     }
@@ -540,9 +544,52 @@ Image Image::equalize() {
     return new_image;
 }
 
-// Image Image::specifize(const Image& image) {
-//     Image a_equalized_image = this->equalize();
-//     Image b_equalized_image = image.equalize();
+Image Image::specifize(const Image& image) {
+    Image new_image(*this);
 
+    double** a_normalizedDistributions = this->getNormalizedDistributions();
+    double** b_normalizedDistributions = image.getNormalizedDistributions();
 
-// }
+    double a_sigmaDistributions[3][this->grayLevel];
+    for (int i = 0; i < 3; i++) {
+        double sigma = 0;
+        for (int j = 0; j < this->grayLevel; j++) {
+            sigma += a_normalizedDistributions[i][j];
+            a_sigmaDistributions[i][j] = sigma;
+        }
+    }
+
+    double b_sigmaDistributions[3][image.grayLevel];
+    for (int i = 0; i < 3; i++) {
+        double sigma = 0;
+        for (int j = 0; j < image.grayLevel; j++) {
+            sigma += b_normalizedDistributions[i][j];
+            b_sigmaDistributions[i][j] = sigma;
+        }
+    }
+
+    int inverse[3][image.grayLevel];
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < this->grayLevel; j++) {
+            double minValue = abs(a_sigmaDistributions[i][j] - b_sigmaDistributions[i][j]); int index = 0;
+            for (int k = 0; k < this->grayLevel; k++) {
+                double distance = abs(a_sigmaDistributions[i][j] - b_sigmaDistributions[i][k]);
+                if (distance < minValue) {
+                    minValue = distance;
+                    index = k;
+                }
+            }
+            inverse[i][j] = index;
+        }
+    }
+
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
+            for (int k = 0; k < 3; k++) {
+                new_image.pixels[i][j][k] = clip(inverse[k][new_image.pixels[i][j][k]], this->grayLevel);
+            }
+        }
+    }
+
+    return new_image;
+}

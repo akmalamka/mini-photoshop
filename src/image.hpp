@@ -35,6 +35,7 @@ class Image {
         int getHeight();
         int getGrayLevel();
 
+        int* getDistributions(int channel);
         int** getDistributions();
         int*** getPixels();
 
@@ -73,7 +74,7 @@ class Image {
         Image bitPlaneSlice(int n);
 
         Image equalize();
-        // Image specifize(const Image& image);
+        Image specifize(const Image& image);
 };
 
 #endif

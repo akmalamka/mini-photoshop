@@ -84,8 +84,8 @@ class Image(object):
     def getGrayLevel(self):
         return _image.Image_getGrayLevel(self)
 
-    def getDistributions(self):
-        return _image.Image_getDistributions(self)
+    def getDistributions(self, *args):
+        return _image.Image_getDistributions(self, *args)
 
     def getPixels(self):
         return _image.Image_getPixels(self)
@@ -161,6 +161,9 @@ class Image(object):
 
     def equalize(self):
         return _image.Image_equalize(self)
+
+    def specifize(self, image):
+        return _image.Image_specifize(self, image)
 
 # Register Image in _image:
 _image.Image_swigregister(Image)
