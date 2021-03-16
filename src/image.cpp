@@ -17,11 +17,19 @@ void Image::_distributions() {
             this->distributions[i][j] = 0;
         }
     }
+
+    this->normalizedDistributions = (double**) malloc(3 * sizeof(double*));
+    for (int i = 0; i < 3; i++) {
+        this->normalizedDistributions[i] = (double*) malloc(this->grayLevel * sizeof(double));
+        for (int j = 0; j < this->grayLevel; j++) {
+            this->normalizedDistributions[i][j] = 0;
+        }
+    }
 }
 
-void Image::_distributions(int** distributions) {
+void Image::_distributions(int** distributions, double** normalizedDistributions) {
     this->_distributions();
-    this->__distributions(distributions);
+    this->__distributions(distributions, normalizedDistributions);
 }
 
 void Image::_pixels() {
@@ -42,10 +50,16 @@ void Image::_pixels(int*** pixels) {
     this->__pixels(pixels);
 }
 
-void Image::__distributions(int** distributions) {
+void Image::__distributions(int** distributions, double** normalizedDistributions) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < this->grayLevel; j++) {
             this->distributions[i][j] = distributions[i][j];
+        }
+    }
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < this->grayLevel; j++) {
+            this->normalizedDistributions[i][j] = normalizedDistributions[i][j];
         }
     }
 }
@@ -92,7 +106,7 @@ Image::Image(const Image& image) {
     this->height = image.height;
     this->grayLevel = image.grayLevel;
 
-    this->_distributions(image.distributions);
+    this->_distributions(image.distributions, image.normalizedDistributions);
     this->_pixels(image.pixels);
 }
 
@@ -136,6 +150,51 @@ int** Image::getDistributions() {
     return this->distributions;
 }
 
+double Image::getMean(int channel) {
+    double* normalizedDistribution = this->getNormalizedDistribution(channel);
+
+    double mean = 0;
+    for (int i = 0; i < this->grayLevel; i++) {
+        mean += i * normalizedDistribution[i];
+    }
+
+    return mean;
+}
+
+double Image::getVariance(int channel) {
+    double mean = this->getMean(channel);
+    double* normalizedDistribution = this->getNormalizedDistribution(channel);
+
+    double variance = 0;
+    for (int i = 0; i < this->grayLevel; i++) {
+        variance += (i - mean) * (i - mean) * normalizedDistribution[i];
+    }
+
+    return variance;
+}
+
+double Image::getStandardDeviation(int channel) {
+    double variance = this->getVariance(channel);
+
+    return sqrt(variance);
+}
+
+double* Image::getNormalizedDistribution(int channel) {
+    return this->getNormalizedDistributions()[channel];
+}
+
+double** Image::getNormalizedDistributions() {
+    int** distributions = this->getDistributions();
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < this->grayLevel; j++) {
+            this->normalizedDistributions[i][j] = distributions[i][j] / (double) (this->width * this->height);
+        }
+    }
+
+    return this->normalizedDistributions;
+}
+
 int*** Image::getPixels() {
     return this->pixels;
 }
@@ -145,7 +204,7 @@ Image& Image::operator=(const Image& image) {
     this->height = image.height;
     this->grayLevel = image.grayLevel;
 
-    this->_distributions(image.distributions);
+    this->_distributions(image.distributions, image.normalizedDistributions);
     this->_pixels(image.pixels);
 
     return (*this);
@@ -311,7 +370,7 @@ Image Image::grayscale() {
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            int new_pixel = (int) round(0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0724 * this->pixels[i][j][3]);
+            int new_pixel = (int) round(0.2126 * this->pixels[i][j][0] + 0.7152 * this->pixels[i][j][1] + 0.0724 * this->pixels[i][j][2]);
             for (int k = 0; k < 3; k++) {
                 new_image.pixels[i][j][k] = clip(new_pixel, new_image.grayLevel);
             }
