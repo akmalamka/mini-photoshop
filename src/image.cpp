@@ -323,19 +323,19 @@ Image Image::operator^(const Image& image) {
     return new_image;
 }
 
-Image Image::operator!(void) {
-    Image new_image(this->width, this->height, this->grayLevel);
+// Image Image::operator!(void) {
+//     Image new_image(this->width, this->height, this->grayLevel);
 
-    for (int i = 0; i < this->height; i++) {
-        for (int j = 0; j < this->width; j++) {
-            for (int k = 0; k < 3; k++) {
-                new_image.pixels[i][j][k] = clip(!this->pixels[i][j][k], new_image.grayLevel);
-            }
-        }
-    }
+//     for (int i = 0; i < this->height; i++) {
+//         for (int j = 0; j < this->width; j++) {
+//             for (int k = 0; k < 3; k++) {
+//                 new_image.pixels[i][j][k] = clip(!this->pixels[i][j][k], new_image.grayLevel);
+//             }
+//         }
+//     }
 
-    return new_image;
-}
+//     return new_image;
+// }
 
 Image Image::transpose() {
     Image new_image(this->height, this->width, this->grayLevel);
@@ -519,13 +519,30 @@ Image Image::equalize() {
 
     int dimension = this->width * this->height;
     int** distributions = this->getDistributions();
+
+    int sigmaDistributions[3][this->grayLevel];
+    for (int i = 0; i < 3; i++) {
+        int sigma = 0;
+        for (int j = 0; j < this->grayLevel; j++) {
+            sigma += distributions[i][j];
+            sigmaDistributions[i][j] = sigma;
+        }
+    }
+
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
-                new_image.pixels[i][j][k] = clip((int) distributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1) / dimension, this->grayLevel);
+                new_image.pixels[i][j][k] = clip((int) sigmaDistributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1) / dimension, this->grayLevel);
             }
         }
     }
 
     return new_image;
 }
+
+// Image Image::specifize(const Image& image) {
+//     Image a_equalized_image = this->equalize();
+//     Image b_equalized_image = image.equalize();
+
+
+// }

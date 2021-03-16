@@ -56,7 +56,7 @@ class Image {
         Image operator&(const Image& image);
         Image operator|(const Image& image);
         Image operator^(const Image& image);
-        Image operator!(void);
+        // Image operator!(void);
 
         Image negative();
         Image grayscale();
@@ -73,6 +73,7 @@ class Image {
         Image bitPlaneSlice(int n);
 
         Image equalize();
+        Image specifize(const Image& image);
 };
 
 #endif
