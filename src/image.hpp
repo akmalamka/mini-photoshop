@@ -3,21 +3,38 @@
 
 class Image {
     private:
-        Image transpose();
-
-    public:
         int width;
         int height;
         int grayLevel;
+
+        int** distributions;
         int*** pixels;
 
+        void _distributions();
+        void _distributions(int** distributions);
+        void _pixels();
+        void _pixels(int*** pixels);
+
+        void __distributions(int** distributions);
+        void __pixels(int*** pixels);
+
+        Image transpose();
+
+    public:
         Image();
         Image(int width, int height, int grayLevel);
-        Image(int width, int height, int grayLevel, int** pixels);
+        // Image(int width, int height, int grayLevel, int** pixels);
         Image(int width, int height, int grayLevel, int*** pixels);
         Image(const Image& image);
 
         ~Image();
+
+        int getWidth();
+        int getHeight();
+        int getGrayLevel();
+
+        int** getDistributions();
+        int*** getPixels();
 
         Image& operator=(const Image& image);
 
@@ -36,7 +53,7 @@ class Image {
         Image grayscale();
         Image translate(int x, int y);
         Image rotate(bool isClockwise);
-        Image flip(bool isVertical);
+        Image flip(bool isHorizontal);
         Image zoom();
 
         Image contrastStrech(int min, int max);
@@ -46,15 +63,7 @@ class Image {
         Image grayLevelSlice(int min, int max);
         Image bitPlaneSlice(int n);
 
-        // int* distribution();
-        // int* distribution(int channel);
-        // int** distributions();
-
-        // int** channel();
-        // int** channel(int channel);
-        // int*** channels();
-
-
+        Image equalize();
 };
 
 #endif
