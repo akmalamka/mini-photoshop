@@ -7,6 +7,7 @@ from tkinter.filedialog import asksaveasfile, asksaveasfilename
 import os
 import numpy as np
 import image
+import cv2 
 
 class App(Frame):
 
@@ -359,7 +360,7 @@ class App(Frame):
         self.flipMenu.entryconfig("Flip Vertical", state='normal')
         self.flipMenu.entryconfig("Flip Horizontal", state='normal')
         self.zoomMenu.entryconfig("Zoom In", state='normal')
-        self.zoomMenu.entryconfig("Zoom Out", state='normal')
+        # self.zoomMenu.entryconfig("Zoom Out", state='normal')
         self.showHistogramMenu.entryconfig("Red", state='normal')
         self.showHistogramMenu.entryconfig("Green", state='normal')
         self.showHistogramMenu.entryconfig("Blue", state='normal')
@@ -534,12 +535,12 @@ class App(Frame):
         self.idHandler(command)
         id = self.id.get()
         if (id == 15):
-            self.mainImageObject = self.mainImageObject.flip(True)
+            self.mainImageObject = self.mainImageObject.flip(False)
             arrTemp = self.save_array_to_frontend(self.mainImageObject)
             self.imageArrMain = arrTemp
             self.show_image()
         elif (id == 16):
-            self.mainImageObject = self.mainImageObject.flip(False)
+            self.mainImageObject = self.mainImageObject.flip(True)
             arrTemp = self.save_array_to_frontend(self.mainImageObject)
             self.imageArrMain = arrTemp
             self.show_image()
@@ -552,11 +553,15 @@ class App(Frame):
             self.mainImageObject = self.mainImageObject.zoom()
             arrTemp = self.save_array_to_frontend(self.mainImageObject)
             self.imageArrMain = arrTemp
+            if (len(self.zoomStack) > 0):
+                self.zoomMenu.entryconfig("Zoom Out", state='normal')
             self.show_image()
         elif (id == 18): # Zoom Out
             self.mainImageObject = self.zoomStack.pop()
             arrTemp = self.save_array_to_frontend(self.mainImageObject)
             self.imageArrMain = arrTemp
+            if (len(self.zoomStack)  == 0):
+                self.zoomMenu.entryconfig("Zoom Out", state='disabled')
             self.show_image()
 
     def show_histogram(self, command, color):
@@ -571,7 +576,10 @@ class App(Frame):
                 plt.title('Histogram')
                 plt.xlabel('Value')
                 plt.ylabel('Pixel Frequency')
-                plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                # plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color, fc='k', ec='k')
+                # plt.hist(red.ravel(),256,[0,256])
+                histr = cv2.calcHist([red],[0],None,[256],[0,256]) 
+                plt.hist(histr)
                 plt.show()
             elif (id == 20): # Show Histogram Green
                 green = histogramNpArr[1]
@@ -592,10 +600,11 @@ class App(Frame):
             histogramNpArr = self.save_histogram_normalized_to_frontend(histogram)
             if (id == 22): # Show Histogram Red
                 red = histogramNpArr[0]
+                print(red)
                 plt.title('Histogram')
                 plt.xlabel('Value')
                 plt.ylabel('Pixel Frequency')
-                plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+                plt.hist(red.astype('float'), bins = self.mainImageObject.getGrayLevel(), range=[0, 1], color=color)
                 plt.show()
             elif (id == 23): # Show Histogram Green
                 green = histogramNpArr[1]
