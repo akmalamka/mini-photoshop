@@ -326,6 +326,8 @@ class App(Frame):
                     arrTemp = self.save_array_to_frontend(self.mainImageObject)
                     self.imageArrMain = arrTemp
                     self.show_image()
+                else:
+                    self.open_image('Histogram Specification')
 
         self.enable_sub_menu('Save File')
         self.enable_all_sub_menu()
