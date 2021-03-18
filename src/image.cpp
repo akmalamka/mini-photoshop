@@ -529,14 +529,14 @@ Image Image::equalize() {
         double sigma = 0;
         for (int j = 0; j < this->grayLevel; j++) {
             sigma += normalizedDistributions[i][j];
-            sigmaNormalizedDistributions[i][j] = sigma;
+            sigmaNormalizedDistributions[i][j] = sigma * (this->grayLevel - 1);
         }
     }
 
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
             for (int k = 0; k < 3; k++) {
-                new_image.pixels[i][j][k] = clip((int) round(sigmaNormalizedDistributions[k][this->pixels[i][j][k]] * (this->grayLevel - 1)), this->grayLevel);
+                new_image.pixels[i][j][k] = clip((int) round(sigmaNormalizedDistributions[k][this->pixels[i][j][k]]), this->grayLevel);
             }
         }
     }
@@ -544,7 +544,7 @@ Image Image::equalize() {
     return new_image;
 }
 
-Image Image::specifize(const Image& image) {
+Image Image::specifize(Image& image) {
     Image new_image(*this);
 
     double** a_normalizedDistributions = this->getNormalizedDistributions();
@@ -555,7 +555,7 @@ Image Image::specifize(const Image& image) {
         double sigma = 0;
         for (int j = 0; j < this->grayLevel; j++) {
             sigma += a_normalizedDistributions[i][j];
-            a_sigmaDistributions[i][j] = sigma;
+            a_sigmaDistributions[i][j] = sigma * (this->grayLevel - 1);
         }
     }
 
@@ -564,7 +564,7 @@ Image Image::specifize(const Image& image) {
         double sigma = 0;
         for (int j = 0; j < image.grayLevel; j++) {
             sigma += b_normalizedDistributions[i][j];
-            b_sigmaDistributions[i][j] = sigma;
+            b_sigmaDistributions[i][j] = sigma * (this->grayLevel - 1);
         }
     }
 
