@@ -234,16 +234,18 @@ class App(Frame):
         switcher = {
             'RGB' : 'RGB',
             'GRAYSCALE' : 'L',
-            'BINARY' : '1'
+            'BINARY' : 'L'
         }
         self.mode.set(switcher.get(self.imageMainType.get(), lambda: 'RGB'))
         if (self.mode.get() == 'RGB'):
-            self.img = ImageTk.PhotoImage(Image.fromarray(self.imageArrMain, self.mode.get())) # photo image class tkinter
+            self.rawImg = Image.fromarray(self.imageArrMain, self.mode.get())
+            self.img = ImageTk.PhotoImage(self.rawImg) # photo image class tkinter
         else:
             arrTemp = self.npArrayHandler('convert3DTo2D', self.imageMainType.get(), self.imageArrMain)
-            self.img = ImageTk.PhotoImage(Image.fromarray(arrTemp, self.mode.get())) # photo image class tkinter
+            self.rawImg = Image.fromarray((arrTemp * 255).astype('uint8'), self.mode.get())
+            self.img = ImageTk.PhotoImage(self.rawImg) # photo image class tkinter
         self.mainPanel = Label(image = self.img)
-        self.mainPanel.pack()
+        self.mainPanel.pack(side=TOP)
         width = self.mainImageObject.getWidth()
         height = self.mainImageObject.getHeight()
         self.statusbar.config(text=self.filename + ' height = ' + str(height) + ' width = ' + str(width) + ' format = ' + self.format.get() + ' size = ' + str(os.path.getsize(self.filename)) + ' bytes')
@@ -332,8 +334,6 @@ class App(Frame):
         file = asksaveasfilename( filetypes = files, defaultextension = files)
         if file is None:
             return None
-        self.rawImg = Image.fromarray(self.imageArrMain, self.mode.get())
-
         self.rawImg.save(file)
 
     def enable_sub_menu(self, menu):
