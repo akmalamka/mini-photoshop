@@ -571,7 +571,7 @@ Image Image::specifize(Image& image) {
     int inverse[3][image.grayLevel];
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < this->grayLevel; j++) {
-            double minValue = abs(a_sigmaDistributions[i][j] - b_sigmaDistributions[i][j]); int index = 0;
+            double minValue = abs(a_sigmaDistributions[i][j] - b_sigmaDistributions[i][0]); int index = 0;
             for (int k = 0; k < this->grayLevel; k++) {
                 double distance = abs(a_sigmaDistributions[i][j] - b_sigmaDistributions[i][k]);
                 if (distance < minValue) {
