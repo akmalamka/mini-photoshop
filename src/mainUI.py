@@ -7,7 +7,6 @@ from tkinter.filedialog import asksaveasfile, asksaveasfilename
 import os
 import numpy as np
 import image
-import cv2 
 
 class App(Frame):
 
@@ -112,7 +111,7 @@ class App(Frame):
         self.histogramMenu.add_cascade(label="Show Normalized Histogram", menu=self.showNormalizedHistogramMenu)
 
         self.histogramMenu.add_command(label="Histogram Equalization", command =lambda: self.histogram_equalization("Histogram Equalization"), state='disabled')
-        self.histogramMenu.add_command(label="Histogram Specification", command =lambda: self.show_histogram("Show Histogram Blue", 'blue'), state='disabled')
+        self.histogramMenu.add_command(label="Histogram Specification", command =lambda: self.open_image("Histogram Specification"), state='disabled')
 
         self.menubar.add_cascade(label="Histogram", menu=self.histogramMenu)
 
@@ -321,6 +320,12 @@ class App(Frame):
                 arrTemp = self.save_array_to_frontend(self.mainImageObject)
                 self.imageArrMain = arrTemp
                 self.show_image()
+            elif (id == 32): # Histogram Specification
+                if (self.mainImageObject.getHeight() == self.operatorImageObject.getHeight() and self.mainImageObject.getWidth() == self.mainImageObject.getWidth()):
+                    self.mainImageObject = self.mainImageObject.specifize(self.operatorImageObject)
+                    arrTemp = self.save_array_to_frontend(self.mainImageObject)
+                    self.imageArrMain = arrTemp
+                    self.show_image()
 
         self.enable_sub_menu('Save File')
         self.enable_all_sub_menu()
@@ -576,10 +581,7 @@ class App(Frame):
                 plt.title('Histogram')
                 plt.xlabel('Value')
                 plt.ylabel('Pixel Frequency')
-                # plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color, fc='k', ec='k')
-                # plt.hist(red.ravel(),256,[0,256])
-                histr = cv2.calcHist([red],[0],None,[256],[0,256]) 
-                plt.hist(histr)
+                plt.hist(red, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
                 plt.show()
             elif (id == 20): # Show Histogram Green
                 green = histogramNpArr[1]
