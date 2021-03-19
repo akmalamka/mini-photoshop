@@ -605,67 +605,74 @@ class App(Frame):
     def show_histogram(self, command, color):
         self.idHandler(command)
         id = self.id.get()
-        histogramOrdinary = [19, 20, 21]
-        if (id in histogramOrdinary):
-            histogram = self.mainImageObject.getDistributions()
-            histogramNpArr = self.save_histogram_to_frontend(histogram)
-            # print(histogramNpArr)
-            if (id == 19): # Show Histogram Red
-                red = histogramNpArr[0]
-                red_ordinary = self.convert_to_histogram__ordinary_pixels(red)
-                # red_ordinary = pd.DataFrame(red, columns = ['Frequencies'])
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
+        # histogramOrdinary = [19, 20, 21]
+        # if (id in histogramOrdinary):
+        histogram = self.mainImageObject.getDistributions()
+        histogramNpArr = self.save_histogram_to_frontend(histogram)
+        # print(histogramNpArr)
+        if (id == 19 or id == 22): # Show Histogram Red
+            red = histogramNpArr[0]
+            red_ordinary = self.convert_to_histogram__ordinary_pixels(red)
+            plt.title('Histogram')
+            plt.xlabel('Value')
+            plt.ylabel('Pixel Frequency')
+            if (id == 19):
+                plt.hist(red_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+            else:
                 plt.hist(red_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color, density=True)
-                plt.show()
-                # red_ordinary.plot.bar(x = 'Frequencies', y = 'Frequencies')
-            elif (id == 20): # Show Histogram Green
-                green = histogramNpArr[1]
-                green_ordinary = self.convert_to_histogram__ordinary_pixels(green)
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
+            plt.show()
+        elif (id == 20 or id == 23): # Show Histogram Green
+            green = histogramNpArr[1]
+            green_ordinary = self.convert_to_histogram__ordinary_pixels(green)
+            plt.title('Histogram')
+            plt.xlabel('Value')
+            plt.ylabel('Pixel Frequency')
+            if (id == 20):
                 plt.hist(green_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
-                plt.show()
-            elif (id == 21): # Show Histogram Blue
-                blue = histogramNpArr[2]
-                blue_ordinary = self.convert_to_histogram__ordinary_pixels(blue)
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
+            else:
+                plt.hist(green_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color, density=True)
+            plt.show()
+        elif (id == 21 or id == 24): # Show Histogram Blue
+            blue = histogramNpArr[2]
+            blue_ordinary = self.convert_to_histogram__ordinary_pixels(blue)
+            plt.title('Histogram')
+            plt.xlabel('Value')
+            plt.ylabel('Pixel Frequency')
+            if (id == 21):
                 plt.hist(blue_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color)
-                plt.show()
-        else:
-            histogram = self.mainImageObject.getDistributions()
-            histogramNpArr = self.save_histogram_to_frontend(histogram)
-            # print(histogramNpArr)
-            if (id == 22): # Show Histogram Red
-                red = histogramNpArr[0]
-                red_ordinary = self.convert_to_histogram__normalize_pixels(red)
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
-                # plt.ylim(0, 1)
-                plt.hist(red_ordinary, bins = 'auto', range=[0, self.mainImageObject.getGrayLevel()], color=color)
-                plt.show()
-            elif (id == 23): # Show Histogram Green
-                green = histogramNpArr[1]
-                green_ordinary = self.convert_to_histogram__normalize_pixels(green)
-                bins = set(sorted(blue_ordinary))
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
-                plt.hist(green_ordinary, bins = 10, range=[0, self.mainImageObject.getGrayLevel()], color=color)
-                plt.show()
-            elif (id == 24): # Show Histogram Blue
-                blue = histogramNpArr[2]
-                blue_ordinary = self.convert_to_histogram__normalize_pixels(blue)
-                plt.title('Histogram')
-                plt.xlabel('Value')
-                plt.ylabel('Pixel Frequency')
-                plt.hist(blue_ordinary, bins = set(sorted(blue_ordinary)), range=[0, self.mainImageObject.getGrayLevel()], color=color)
-                plt.show()
+            else:
+                plt.hist(blue_ordinary, bins = self.mainImageObject.getGrayLevel(), range=[0, self.mainImageObject.getGrayLevel()], color=color, density=True)
+            plt.show()
+        # else:
+        #     histogram = self.mainImageObject.getDistributions()
+        #     histogramNpArr = self.save_histogram_to_frontend(histogram)
+        #     # print(histogramNpArr)
+        #     if (id == 22): # Show Histogram Red
+        #         red = histogramNpArr[0]
+        #         red_ordinary = self.convert_to_histogram__normalize_pixels(red)
+        #         plt.title('Histogram')
+        #         plt.xlabel('Value')
+        #         plt.ylabel('Pixel Frequency')
+        #         # plt.ylim(0, 1)
+        #         plt.hist(red_ordinary, bins = 'auto', range=[0, self.mainImageObject.getGrayLevel()], color=color)
+        #         plt.show()
+        #     elif (id == 23): # Show Histogram Green
+        #         green = histogramNpArr[1]
+        #         green_ordinary = self.convert_to_histogram__normalize_pixels(green)
+        #         bins = set(sorted(blue_ordinary))
+        #         plt.title('Histogram')
+        #         plt.xlabel('Value')
+        #         plt.ylabel('Pixel Frequency')
+        #         plt.hist(green_ordinary, bins = 10, range=[0, self.mainImageObject.getGrayLevel()], color=color)
+        #         plt.show()
+        #     elif (id == 24): # Show Histogram Blue
+        #         blue = histogramNpArr[2]
+        #         blue_ordinary = self.convert_to_histogram__normalize_pixels(blue)
+        #         plt.title('Histogram')
+        #         plt.xlabel('Value')
+        #         plt.ylabel('Pixel Frequency')
+        #         plt.hist(blue_ordinary, bins = set(sorted(blue_ordinary)), range=[0, self.mainImageObject.getGrayLevel()], color=color)
+        #         plt.show()
         
     
     def histogram_equalization(self, command):
